@@ -46,14 +46,16 @@ public class Main extends Game {
     Agente agMapa;
     Agente sideB;
     Agente puerta;
+    Agente bucket;
     
-    SpriteGroup grupoAgente, grupoBala, grupoPuerta;
+    SpriteGroup grupoAgente, grupoBala, grupoPuerta, grupoBucket;
     SpriteGroup grupoMapa;
     
     colisionAgentes colisionadorBM; //Bala-mapa
     colisionAgentes[] colisionadorAE; //Agente-enemigo
     colisionAgentes[] colisionadorBE; //Bala-enemigo
     colisionAgentes colisionadorAP; //Agente-puerta
+    colisionAgentes colisionadorAB; //Agente-cubeta
     
     Timer velocidad;
     
@@ -97,6 +99,8 @@ public class Main extends Game {
     
     private int doorX;
     private int doorY;
+    private int bucketX;
+    private int bucketY;
     
     private int lives = 3;
     
@@ -142,6 +146,7 @@ public class Main extends Game {
     private final String coinName_green = "diamante_green.png";
     private final String[] mapNames = {"Mapa1/Mapa_1_Bordes","Mapa2/Mapa_2_Bordes"};
     private final String doorName = "red_door";
+    private final String bucketName = "poket";
     private int currMap = (currLevel < 3) ? 0 : 1;
     
     private final int CLIP_WIDTH = 960;
@@ -202,6 +207,7 @@ public class Main extends Game {
         bsLoader.storeImages("1_3", getImages("images/" + enemyName + "_right.png", enemyStrip, 1));
         
         bsLoader.storeImages("2_0", getImages("images/" + doorName + ".png", 1, 1));
+        bsLoader.storeImages("3_0", getImages("images/" + bucketName + ".png", 1, 1));
         ///////////////////////////////////////////////////////////////////////////////////
         
         map = getImage(mapNames[currMap] + ".png");
@@ -293,6 +299,14 @@ public class Main extends Game {
         
         resetDoorCoords();
         
+        bucket = new Agente("3");
+        bucket.setImages(bsLoader.getStoredImages("3_0"));
+        bucket.setDirection(0);
+        bucket.setBackground(fondo);
+        bucket.obtenerBsLoader(bsLoader);
+        
+        resetBucketCoords();
+        
         ////////////////////////////////////////////////////////////
         
         mapHeight = map.getHeight();
@@ -346,8 +360,15 @@ public class Main extends Game {
         grupoPuerta.add(puerta);
         grupoPuerta.setBackground(fondo);
         
+        grupoBucket = new SpriteGroup("Grupo bucket");
+        grupoBucket.add(bucket);
+        grupoBucket.setBackground(fondo);
+        
         colisionadorAP = new colisionAgentes("colisionador AP");
         colisionadorAP.setCollisionGroup(grupoPuerta, grupoAgente);
+        
+        colisionadorAB = new colisionAgentes("colisionador AB");
+        colisionadorAB.setCollisionGroup(grupoAgente,grupoBucket);
         
         grupoBala = new SpriteGroup("Grupo bala");
         
@@ -398,6 +419,50 @@ public class Main extends Game {
                         puerta.setY(SQ_SIZE*doorY);
                         
                         System.out.println("doorX = " + doorX + "; doorY = " + doorY);
+                        
+                        return;
+                    }
+                    
+                    randomInt--;
+                }
+            }
+    }
+    
+     public void resetBucketCoords(){
+         
+        if(prevCurrTime == currTime)
+            return;
+        
+        ArrayList<Integer> myLX = new ArrayList<Integer>();
+        ArrayList<Integer> myLY = new ArrayList<Integer>();
+        
+        for(int i = 0; i < mapHeight/SQ_SIZE; i++)    
+            myLY.add(i);
+               
+        for(int j = 0; j < mapWidth/SQ_SIZE; j++)
+            myLX.add(j);
+            
+        Collections.shuffle(myLX);
+        Collections.shuffle(myLY);
+        
+        long seed = System.nanoTime();
+        Random randomGenerator = new Random();
+        int randomInt = randomGenerator.nextInt(Math.min(mapHeight/SQ_SIZE - 1, mapWidth/SQ_SIZE - 1));
+        
+        for(int i : myLY)
+            for(int j : myLX){
+                
+                if(controlMatrix[i][j] >= 1){
+                    
+                    if(randomInt == 0){
+                        
+                        bucketX = j;
+                        bucketY = i;
+                        
+                        bucket.setX(SQ_SIZE*bucketX);
+                        bucket.setY(SQ_SIZE*bucketY);
+                        
+                        System.out.println("bucketX = " + bucketX + "; bucketY = " + bucketY);
                         
                         return;
                     }
@@ -1206,6 +1271,7 @@ public class Main extends Game {
         fondo.update(elapsedTime);
         grupoAgente.update(elapsedTime);
         grupoPuerta.update(elapsedTime);
+        grupoBucket.update(elapsedTime);
         
         grupoBala.update(elapsedTime);
         checkBullets();
@@ -1225,6 +1291,11 @@ public class Main extends Game {
             map = getImage(mapNames[currMap] + ".png");
         }
         
+        colisionadorAB.checkCollision();
+       /* if(colisionadorAB.getCollision()){
+            
+        }*/
+        
         if(keyPressed(KeyEvent.VK_SPACE))           
             shoot(agente.getX() + SQ_SIZE/2, agente.getY() + SQ_SIZE/2);  
         
@@ -1234,6 +1305,7 @@ public class Main extends Game {
         
         if(currTime%DOOR_TIME_FACTOR == 0){
             
+            resetBucketCoords();
             resetDoorCoords();  
         }
     }
@@ -2046,6 +2118,7 @@ public class Main extends Game {
         
         grupoPuerta.render(g);
         grupoAgente.render(g);
+        grupoBucket.render(g);
         sprite3.render(g);
         
         grupoBala.render(g);
