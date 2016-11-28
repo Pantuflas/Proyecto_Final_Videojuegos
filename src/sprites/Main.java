@@ -5,6 +5,9 @@
  */
 package sprites;
 
+
+
+//Prueba GIT
 import com.golden.gamedev.*;
 import com.golden.gamedev.object.*;
 import com.golden.gamedev.object.background.*;
@@ -21,6 +24,20 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+
+/*  
+    x[0]  x[1]
+    y[0]  y[1]
+     _ _ _
+    |     |
+    |     |
+    |_ _ _|
+
+    x[2]  x[3]
+    y[2]  y[3]
+
+*/
+
 public class Main extends Game {
     
     Background fondo;
@@ -29,14 +46,16 @@ public class Main extends Game {
     Agente agMapa;
     Agente sideB;
     Agente puerta;
+    Agente bucket;
     
-    SpriteGroup grupoAgente, grupoBala, grupoPuerta;
+    SpriteGroup grupoAgente, grupoBala, grupoPuerta, grupoBucket;
     SpriteGroup grupoMapa;
     
     colisionAgentes colisionadorBM; //Bala-mapa
     colisionAgentes[] colisionadorAE; //Agente-enemigo
     colisionAgentes[] colisionadorBE; //Bala-enemigo
     colisionAgentes colisionadorAP; //Agente-puerta
+    colisionAgentes colisionadorAB; //Agente-cubeta
     
     Timer velocidad;
     
@@ -59,7 +78,10 @@ public class Main extends Game {
     private AnimatedSprite bobUp;
     private AnimatedSprite bobDown;
     private boolean gameOver = false;
-
+    
+    //Sprite spiderStatic1;
+    //Sprite spiderStatic2;
+    
     private AnimatedSprite sprite2;
     private BufferedImage image;
     private BufferedImage map;
@@ -77,6 +99,8 @@ public class Main extends Game {
     
     private int doorX;
     private int doorY;
+    private int bucketX;
+    private int bucketY;
     
     private int lives = 3;
     
@@ -122,6 +146,7 @@ public class Main extends Game {
     private final String coinName_green = "diamante_green.png";
     private final String[] mapNames = {"Mapa1/Mapa_1_Bordes","Mapa2/Mapa_2_Bordes"};
     private final String doorName = "red_door";
+    private final String bucketName = "poket";
     private int currMap = (currLevel < 3) ? 0 : 1;
     
     private final int CLIP_WIDTH = 960;
@@ -138,7 +163,6 @@ public class Main extends Game {
     private int bobX = -1;
     private int bobY = -1;
     
-    //////////////////////////////////////////////////////////////////////
     /*
         
         new code
@@ -158,7 +182,7 @@ public class Main extends Game {
     private int direc3 = 4;
     private int prevEnemyDirection = -1;
     
-    AnimatedSprite sprite3; //R2, the enemy
+    AnimatedSprite sprite3; //R2
     
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     
@@ -177,7 +201,13 @@ public class Main extends Game {
         bsLoader.storeImages("0_2", getImages("images/" + characterName + "_left.png", characterStrip, 1));
         bsLoader.storeImages("0_3", getImages("images/" + characterName + "_right.png", characterStrip, 1));
         
+        bsLoader.storeImages("1_0", getImages("images/" + enemyName + "_up.png", enemyStrip, 1));
+        bsLoader.storeImages("1_1", getImages("images/" + enemyName + "_down.png", enemyStrip, 1));
+        bsLoader.storeImages("1_2", getImages("images/" + enemyName + "_left.png", enemyStrip, 1));
+        bsLoader.storeImages("1_3", getImages("images/" + enemyName + "_right.png", enemyStrip, 1));
+        
         bsLoader.storeImages("2_0", getImages("images/" + doorName + ".png", 1, 1));
+        bsLoader.storeImages("3_0", getImages("images/" + bucketName + ".png", 1, 1));
         ///////////////////////////////////////////////////////////////////////////////////
         
         map = getImage(mapNames[currMap] + ".png");
@@ -235,7 +265,7 @@ public class Main extends Game {
         controlMatrix = new int[mapHeight/SQ_SIZE][mapWidth/SQ_SIZE];
         fillControlMatrix();
         
-        currBullets = 100;
+        currBullets = 100/*AM_SPIDERS*4*/;
 
         ///////////////////////////////////////////////////////////
         
@@ -269,6 +299,14 @@ public class Main extends Game {
         
         resetDoorCoords();
         
+        bucket = new Agente("3");
+        bucket.setImages(bsLoader.getStoredImages("3_0"));
+        bucket.setDirection(0);
+        bucket.setBackground(fondo);
+        bucket.obtenerBsLoader(bsLoader);
+        
+        resetBucketCoords();
+        
         ////////////////////////////////////////////////////////////
         
         mapHeight = map.getHeight();
@@ -293,15 +331,19 @@ public class Main extends Game {
         addIntersectionsToControlMatrix();
         addDiamondsToControlMatrix();
         
-        /*System.out.println();
+        System.out.println();
         
         displayControlMatrix();
-        */
    
-        ////////////////////////////////////////////////////////
+       ////////////////////////////////////////////////////////
         
         currPos = 'c';
         prevPos = 'c';
+        
+        directionCounter = new int[AM_SPIDERS];
+        
+        for(int i = 0; i < AM_SPIDERS; i++)
+            directionCounter[i] = SQ_SIZE/2;
         
         setCoinMatrix();
         createCoins();
@@ -318,8 +360,15 @@ public class Main extends Game {
         grupoPuerta.add(puerta);
         grupoPuerta.setBackground(fondo);
         
+        grupoBucket = new SpriteGroup("Grupo bucket");
+        grupoBucket.add(bucket);
+        grupoBucket.setBackground(fondo);
+        
         colisionadorAP = new colisionAgentes("colisionador AP");
         colisionadorAP.setCollisionGroup(grupoPuerta, grupoAgente);
+        
+        colisionadorAB = new colisionAgentes("colisionador AB");
+        colisionadorAB.setCollisionGroup(grupoAgente,grupoBucket);
         
         grupoBala = new SpriteGroup("Grupo bala");
         
@@ -370,6 +419,50 @@ public class Main extends Game {
                         puerta.setY(SQ_SIZE*doorY);
                         
                         System.out.println("doorX = " + doorX + "; doorY = " + doorY);
+                        
+                        return;
+                    }
+                    
+                    randomInt--;
+                }
+            }
+    }
+    
+     public void resetBucketCoords(){
+         
+        if(prevCurrTime == currTime)
+            return;
+        
+        ArrayList<Integer> myLX = new ArrayList<Integer>();
+        ArrayList<Integer> myLY = new ArrayList<Integer>();
+        
+        for(int i = 0; i < mapHeight/SQ_SIZE; i++)    
+            myLY.add(i);
+               
+        for(int j = 0; j < mapWidth/SQ_SIZE; j++)
+            myLX.add(j);
+            
+        Collections.shuffle(myLX);
+        Collections.shuffle(myLY);
+        
+        long seed = System.nanoTime();
+        Random randomGenerator = new Random();
+        int randomInt = randomGenerator.nextInt(Math.min(mapHeight/SQ_SIZE - 1, mapWidth/SQ_SIZE - 1));
+        
+        for(int i : myLY)
+            for(int j : myLX){
+                
+                if(controlMatrix[i][j] >= 1){
+                    
+                    if(randomInt == 0){
+                        
+                        bucketX = j;
+                        bucketY = i;
+                        
+                        bucket.setX(SQ_SIZE*bucketX);
+                        bucket.setY(SQ_SIZE*bucketY);
+                        
+                        System.out.println("bucketX = " + bucketX + "; bucketY = " + bucketY);
                         
                         return;
                     }
@@ -679,13 +772,13 @@ public class Main extends Game {
         
         int w = map.getWidth();
         int h = map.getHeight();
-        //System.out.println("width, height: " + w + ", " + h);
+        System.out.println("width, height: " + w + ", " + h);
 
         for (int i = SQ_SIZE/2; i < h; i += SQ_SIZE){
             
             for (int j = SQ_SIZE/2; j < w; j += SQ_SIZE){
             
-                //System.out.println("x,y: " + j + ", " + i);
+                System.out.println("x,y: " + j + ", " + i);
                 int pixel = map.getRGB(j, i);
                 printPixelARGB(pixel, i, j);
                 //System.out.println("");
@@ -719,11 +812,11 @@ public class Main extends Game {
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
-        //System.out.println("argb: " + alpha + ", " + red + ", " + green + ", " + blue);
+        System.out.println("argb: " + alpha + ", " + red + ", " + green + ", " + blue);
         
         if(j/SQ_SIZE < map.getWidth()){
             
-            //System.out.println("i = " + i + "; j = " + j);
+            System.out.println("i = " + i + "; j = " + j);
             
             if(isGreenCell(red, green, blue))
                 controlMatrix[i/SQ_SIZE][j/SQ_SIZE] = OPEN_CELL;
@@ -741,7 +834,7 @@ public class Main extends Game {
         if(startTime - System.nanoTime()/TIME_FACTOR < 0)
             currTime = System.nanoTime()/TIME_FACTOR - startTime;
         
-        //System.out.println("currTime = " + currTime);
+        System.out.println("currTime = " + currTime);
         
         //if(currTime >= 100)
             //currLevel = 6;
@@ -753,7 +846,7 @@ public class Main extends Game {
     if(lives == 0)
         currLevel = 6;
     
-    //System.out.println("currLevel = " + currLevel); 
+    System.out.println("currLevel = " + currLevel); 
      
     switch(currLevel){
 
@@ -1059,6 +1152,52 @@ public class Main extends Game {
 
     updateCoins(elapsedTime);
     counter++;
+
+    /*if(currLevel == 4){
+
+        switch((int) currTime/10){
+
+            case 0:
+                break;
+
+            case 1:
+
+                numbers[1].update(elapsedTime);
+                break;
+
+            case 2:
+                numbers[2].update(elapsedTime);
+                break;
+
+            case 3:
+                numbers[3].update(elapsedTime);
+                break;
+
+            case 4:
+                numbers[4].update(elapsedTime);
+                break;
+
+            case 5:
+                numbers[5].update(elapsedTime);
+                break;
+
+            case 6:
+                numbers[6].update(elapsedTime);
+                break;
+
+            case 7:
+                numbers[7].update(elapsedTime);
+                break;
+
+            case 8:
+                numbers[8].update(elapsedTime);
+                break;
+
+            case 9:
+                numbers[9].update(elapsedTime);
+                break;
+        }
+    }*/
     }
     
     public void shoot(double x, double y){
@@ -1124,6 +1263,7 @@ public class Main extends Game {
         if(velocidad.action(elapsedTime)){
             
             moveCharacter(elapsedTime);
+            //moveEnemies(elapsedTime); 
             moveR2(elapsedTime);
         }
         
@@ -1131,6 +1271,7 @@ public class Main extends Game {
         fondo.update(elapsedTime);
         grupoAgente.update(elapsedTime);
         grupoPuerta.update(elapsedTime);
+        grupoBucket.update(elapsedTime);
         
         grupoBala.update(elapsedTime);
         checkBullets();
@@ -1150,6 +1291,11 @@ public class Main extends Game {
             map = getImage(mapNames[currMap] + ".png");
         }
         
+        colisionadorAB.checkCollision();
+       /* if(colisionadorAB.getCollision()){
+            
+        }*/
+        
         if(keyPressed(KeyEvent.VK_SPACE))           
             shoot(agente.getX() + SQ_SIZE/2, agente.getY() + SQ_SIZE/2);  
         
@@ -1159,6 +1305,7 @@ public class Main extends Game {
         
         if(currTime%DOOR_TIME_FACTOR == 0){
             
+            resetBucketCoords();
             resetDoorCoords();  
         }
     }
@@ -1179,6 +1326,7 @@ public class Main extends Game {
                 agente.setStatus(1);
                 agente.avanzar(elapsedTime, 0, -1);
                 currPos = 'u'; 
+                //System.out.println("currPos = " + currPos);
                 prevPos = 'u';
                 
                 bobY -= 1;
@@ -1287,8 +1435,8 @@ public class Main extends Game {
         if(prevEnemyDirection == direction)
             return;
         
-        //System.out.println("prevEnemyDirection = " + prevEnemyDirection);
-        //System.out.println("direction = " + direction);
+        System.out.println("prevEnemyDirection = " + prevEnemyDirection);
+        System.out.println("direction = " + direction);
         prevEnemyDirection = direction;
         
         setEnemyCoords();
@@ -1332,7 +1480,7 @@ public class Main extends Game {
     public void moveR2(long elapsedTime){
         
         setEnemyCoords(); 
-        //System.out.println("coordX = " + enemyCoordX + "; coordY = " + enemyCoordY);
+        System.out.println("coordX = " + enemyCoordX + "; coordY = " + enemyCoordY);
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((totSpiders[0][].getX()+13)); //X Cell*/
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((sprite3.getY()+13)); //Y Cell*/
         
@@ -1345,10 +1493,10 @@ public class Main extends Game {
         if(auxmY < 0)
             auxmY *= -1;
         
-        //System.out.println("pmX = " + pmX + "; pmY = " + pmY);
-        //System.out.println("auxmX = " + auxmX + "; auxmY = " + auxmY);
-        //System.out.println("direc3 = " + direc3);
-        //System.out.println();
+        System.out.println("pmX = " + pmX + "; pmY = " + pmY);
+        System.out.println("auxmX = " + auxmX + "; auxmY = " + auxmY);
+        System.out.println("direc3 = " + direc3);
+        System.out.println();
         
         int err = SQ_SIZE/8; //3-pixel error
         
@@ -1356,6 +1504,7 @@ public class Main extends Game {
          
         if(auxmX == SQ_SIZE/2 && auxmY == SQ_SIZE/2){
             
+            System.out.println("I'm in!!!");
             int arriba, abajo, derecha, izquierda;
             
             if(controlMatrix[pmY - 1][pmX] != BLOCKED_CELL)
@@ -1969,6 +2118,7 @@ public class Main extends Game {
         
         grupoPuerta.render(g);
         grupoAgente.render(g);
+        grupoBucket.render(g);
         sprite3.render(g);
         
         grupoBala.render(g);
