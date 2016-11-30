@@ -41,7 +41,8 @@ public class Nodo implements Comparable<Nodo>{
     private int mapHeight;
     private int mapWidth;
     
-    public Nodo (int[][] controlMatrix,int posX, int posY, int prevDirection, int height, int direction, int level, BufferedImage map){
+    public Nodo (int[][] controlMatrix,int posX, int posY, int prevDirection, int height, int direction, int level, BufferedImage map, boolean found){
+        pathFound = found;
         matrix = controlMatrix;
         positionX = posX;
         positionY = posY;
@@ -52,6 +53,10 @@ public class Nodo implements Comparable<Nodo>{
         currentDirection = direction;
         setLevel(level);
         setMap(map);
+        System.out.println();
+        System.out.println("X: "+positionX+"         Y:"+positionY);
+        System.out.println("Parent index: "+parentIndex);
+        System.out.println("CurrentDirection: "+currentDirection);
         
         if(level <= 3){
             
@@ -84,7 +89,7 @@ public class Nodo implements Comparable<Nodo>{
         closestDiamondXCell = -1;
         closestDiamondYCell = -1;
         int minManhDist = 1000;
-        
+        System.out.println("getClosestDiamond");
         System.out.println("mapHeight = " + mapHeight + "; mapWidth = " + mapWidth);
         System.out.println("positionY = " + positionY + "; positionX = " + positionX);
         
@@ -107,6 +112,7 @@ public class Nodo implements Comparable<Nodo>{
         }
         
         System.out.println("closestDiamondYCell = " + closestDiamondYCell + "; closestDiamondXCell = " + closestDiamondXCell);
+        System.out.println("FIN getClosestDiamond");
     }
     
     public void setLevel(int level){
@@ -115,11 +121,11 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public void setValue(){
-        
+        System.out.println("setValue");
         if(level <= 3){ //Weak evaluation function for level 1
             
             value = computeManhDist(positionY, positionX, closestDiamondYCell, closestDiamondXCell);
-            value += g*g;
+            value += g;
             System.out.println("value = " + value);
         }
         
@@ -127,6 +133,7 @@ public class Nodo implements Comparable<Nodo>{
             
             
         }
+        System.out.println("Fin setValue");
     }
     
     public long getValue(){
@@ -155,23 +162,22 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public void validMove(int posX, int posY){
-            
-            if(coordsAreValid(positionX, positionY - 1) && matrix[positionY - 1][positionX] != BLOCKED_CELL)
+            if(matrix[positionY - 1][positionX] != BLOCKED_CELL && lastDirection != 1)
                 up = true;
             else
                 up = false;
             
-            if(coordsAreValid(positionX, positionY + 1) &&  matrix[positionY + 1][positionX ] != BLOCKED_CELL)
+            if(matrix[positionY + 1][positionX ] != BLOCKED_CELL && lastDirection != 3)
                 down = true;
             else
                 down = false;
             
-            if(coordsAreValid(positionX + 1, positionY) &&  matrix[positionY][positionX  + 1] != BLOCKED_CELL)
+            if(matrix[positionY][positionX  + 1] != BLOCKED_CELL && lastDirection != 2)
                 right = true;
             else
                 right = false;
             
-            if(coordsAreValid(positionX - 1, positionY) && matrix[positionY][positionX - 1] != BLOCKED_CELL)
+            if(matrix[positionY][positionX - 1] != BLOCKED_CELL && lastDirection != 4)
                 left = true;
             else
                 left = false;
@@ -189,97 +195,82 @@ public class Nodo implements Comparable<Nodo>{
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){
         System.out.println("ComputeCholdren!!!!");
+        System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
         
         if(right == true){
             
-            int nextCell = 1;
+            int nextCell = OPEN_CELL;
             
             int posX1 = posX;
             
-            while(coordsAreValid(posX1, posY) && nextCell == OPEN_CELL){
+            
                 
                 posX1++;
-                System.out.println("posX1 = " + posX1 + "; posY = " + posY);
                 nextCell = matrix[posY][posX1];
-            }
             
-            if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map));
             
-            else{
-                
-                pathFound = true;
-                //return myChildren;
-            }
+            if(isDoorOrDiamond(posX1, posY))
+                myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map, true));
+            else
+                myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map, false));
+            
         }
         
         if(left == true){
             
-            int nextCell = 1;
+            int nextCell = OPEN_CELL;
             
             int posX2 = posX;
             
-            while(coordsAreValid(posX2, posY) && nextCell == OPEN_CELL){
                 
                 posX2--;
-                nextCell = matrix[posY][posX];
-            }
+                nextCell = matrix[posY][posX2];
             
-            if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX2, posY, 2, (g + 1), 4, level, map));
             
-            else{
-                pathFound = true;
-                //return myChildren;
-            }
+            if(isDoorOrDiamond(posX2, posY))
+                myChildren.add(new Nodo(matrix, posX2, posY, 2, (g + 1), 4, level, map, true));
+            else
+                myChildren.add(new Nodo(matrix, posX2, posY, 2, (g + 1), 4, level, map, false));
+            
         }
         
         if(up == true){
             
-            int nextCell = 1;
+            int nextCell = OPEN_CELL;
             
             int posY1 = posY;
             
-            while(coordsAreValid(posX, posY1) && nextCell == OPEN_CELL){
-                
+
                 posY1--;
                 nextCell = matrix[posY1][posX];
-            }
             
-            if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map));
+            if(isDoorOrDiamond(posX, posY1))
+                myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map, true));
+            else
+                myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map, false));
             
-            else{
-                pathFound = true;
-                //return myChildren;
-            }
+            
         }
         
         if(down == true){
             
-            int nextCell = 1;
+            int nextCell = OPEN_CELL;
             
             int posY2 = posY;
-            
-            while(coordsAreValid(posX, posY2) && nextCell == OPEN_CELL){
+
                 
                 posY2++;
                 nextCell = matrix[posY2][posX];
-            }
             
-            if(!isDoorOrDiamond(posX, posY)){
-                myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map));
-                System.out.println("Hijo abajo!!!!!");
-            }
+            if(isDoorOrDiamond(posX, posY2))
+                myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map, true));
+            else
+                myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map, false));
             
-            else{
-                pathFound = true;
-                System.out.println("Cambio!!!!!");
-                //return myChildren;
-            }
+            
         }
-            
+        
         return myChildren;
     }
     public int getParentIndex(){

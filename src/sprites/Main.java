@@ -158,8 +158,8 @@ public class Main extends Game {
     private final int CHARACTER_START_Y = SQ_SIZE;
     /*32*//*SQ_SIZE + SQ_SIZE/2*/
     ;
-    private final int ENEMY_STARTPOS_X = 1 * SQ_SIZE; //11*/ //480
-    private final int ENEMY_STARTPOS_Y = 5 * SQ_SIZE;
+    private final int ENEMY_STARTPOS_X = 15 * SQ_SIZE; //11*/ //480
+    private final int ENEMY_STARTPOS_Y = 1 * SQ_SIZE;
     /*96*/ //32
 
     private int bobX = -1;
@@ -175,12 +175,12 @@ public class Main extends Game {
     private double auxmY = -1;
     private double auxmX = -1;
 
-    private int mX3 = -1;
+    private int mX3 = 0;
     private int mY3 = 0;
 
     private int enemyCoordX = ENEMY_STARTPOS_X;
     private int enemyCoordY = ENEMY_STARTPOS_Y;
-    private int direc3 = 4;
+    private int direc3 = 0;
     private int prevEnemyDirection = -1;
 
     AnimatedSprite sprite3; //R2
@@ -1502,11 +1502,14 @@ public class Main extends Game {
         moves.clear();
 
         System.out.println("path.size() = " + path.size());
-
-        for (int i = 0; i < path.size(); i++) {
+        moves.add(closed.get(0).getCurrentDirection());
+        for (int i = 1; i < path.size(); i++) {
 
             int closedIndex = path.get(i); //Get the index of the child in the closed array
             moves.add(closed.get(closedIndex).getCurrentDirection()); //Get the direction
+        }
+        for(int c : moves){
+            System.out.println(c);
         }
     }
 
@@ -1514,6 +1517,10 @@ public class Main extends Game {
 
         //Take the path from the "closed" array list
         path.clear();
+        
+        for(Nodo x : closed){
+            System.out.println(x);
+        }
 
         int index = closed.size() - 1;
 
@@ -1522,16 +1529,14 @@ public class Main extends Game {
         while (index >= 0) {
 
             path.add(0, closed.get(index).getParentIndex());
-
-            if (index == 0) {
-                return;
-            }
+            
 
             index = closed.get(index).getParentIndex();
 
             //System.out.println("index = " + index);
         }
-
+        for(int c : path)
+                System.out.println(c);
         System.out.println("Getting moves!!");
         getMoves();
     }
@@ -2067,20 +2072,20 @@ public class Main extends Game {
     public void setMoveDirection(int direction) {
         switch (direction) {
             case 1:
-                mX3 = -1;
-                mY3 = 0;
+                mX3 = 0;
+                mY3 = -1;
                 break;
             case 2:
-                mX3 = 0;
-                mY3 = 1;
-                break;
-            case 3:
                 mX3 = 1;
                 mY3 = 0;
                 break;
-            case 4:
+            case 3:
                 mX3 = 0;
-                mY3 = -1;
+                mY3 = 1;
+                break;
+            case 4:
+                mX3 = -1;
+                mY3 = 0;
                 break;
         }
     }
@@ -2090,7 +2095,7 @@ public class Main extends Game {
         pmX = (enemyCoordX + SQ_SIZE / 2) / SQ_SIZE;
         pmY = (enemyCoordY + SQ_SIZE / 2) / SQ_SIZE;
 
-        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map);
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map, false);
 
         getMovementsR2(startingNode);
 
@@ -2106,12 +2111,13 @@ public class Main extends Game {
         }
 
         int currentDecisionIndex = 0;
+        for(int i = 0; i<moves.size(); i++){
+        if (auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2) {
 
-        if (auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2 && coordIsIntersection(pmX, pmY)) {
-
-            System.out.println("moves.size() = " + moves.size());
-            setMoveDirection(moves.get(currentDecisionIndex));
+            System.out.println("moves.size() = " + moves.get(i));
+            setMoveDirection(moves.get(i));
             currentDecisionIndex++;
+        }
         }
     }
 
