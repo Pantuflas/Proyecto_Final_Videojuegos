@@ -253,6 +253,8 @@ public class Main extends Game {
     
     public void resetLevel(){
         
+        path = new ArrayList<Integer>();
+        moves = new ArrayList<Integer>();
         open = new PriorityQueue<Nodo>();
         closed = new ArrayList<Nodo>();
         
@@ -1556,6 +1558,8 @@ public class Main extends Game {
         
         while(!open.isEmpty()){
             
+            System.out.println("open.size() = " + open.size());
+            
             Nodo x = open.poll();
             
             closed.add(x); 
@@ -2070,7 +2074,7 @@ public class Main extends Game {
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE;
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
         
-        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0);
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map);
         
         getMovementsR2(startingNode);
         
