@@ -132,7 +132,8 @@ public class Main extends Game {
     
     private int counter = 0;
     private int pickedCoins1 = 0;
-    private int pickedCoins2 = 0;
+    private int pickedCoins2 = 0; //Diamonds picked by the enemy
+    private int prevPickedCoins2 = -1; //previous amount of diamonds picked by the enemy
     private int currLevel = 0;
     private long startTime;
     private long currTime;
@@ -159,8 +160,8 @@ public class Main extends Game {
 
     private final int CHARACTER_START_X = SQ_SIZE;
     private final int CHARACTER_START_Y = SQ_SIZE; /*32*//*SQ_SIZE + SQ_SIZE/2*/;
-    private final int ENEMY_STARTPOS_X = 11*SQ_SIZE /*448*/; //480
-    private final int ENEMY_STARTPOS_Y  = 5*SQ_SIZE /*96*/; //32
+    private final int ENEMY_STARTPOS_X = 1*SQ_SIZE; //11*/ //480
+    private final int ENEMY_STARTPOS_Y  = 5*SQ_SIZE; /*96*/ //32
     
     private int bobX = -1;
     private int bobY = -1;
@@ -192,6 +193,7 @@ public class Main extends Game {
     ArrayList<Integer> moves; //Stores the required directions to get to a position
     
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
+    private boolean allIsReady = false;
     
     /*
         c = center
@@ -389,6 +391,8 @@ public class Main extends Game {
         colisionadorBM.setCollisionGroup(grupoMapa, grupoBala);
         
         velocidad = new Timer(1);
+        
+        allIsReady = true;
     }
     
     public void resetDoorCoords(){
@@ -1294,7 +1298,14 @@ public class Main extends Game {
             
             moveCharacter(elapsedTime);
             //moveEnemies(elapsedTime); 
-            moveR2(elapsedTime);
+            
+            sprite3.move(mX3, mY3);
+        }
+        
+        if(prevPickedCoins2 < pickedCoins2){ //If the enemy just caught another diamond
+            
+            prevPickedCoins2++;
+            moveR2();
         }
         
         fondo.setToCenter(agente);
@@ -1511,6 +1522,8 @@ public class Main extends Game {
         
         moves.clear();
         
+        System.out.println("path.size() = " + path.size());
+        
         for(int i = 0; i < path.size(); i++){
             
             int closedIndex = path.get(i); //Get the index of the child in the closed array
@@ -1526,7 +1539,7 @@ public class Main extends Game {
         
         int index = closed.size() - 1;
        
-       //System.out.println("index = " + index);
+       System.out.println("!!!!!!! index = " + index);
        
         while(index >= 0){
            
@@ -1540,6 +1553,7 @@ public class Main extends Game {
            //System.out.println("index = " + index);
         }
         
+        System.out.println("Getting moves!!");
         getMoves();
     }
     
@@ -1564,6 +1578,8 @@ public class Main extends Game {
             
             closed.add(x); 
             
+            System.out.println("Node x =" + x);
+            
             if(x.getPathFound() == true){ //It got either a diamond or the door
                 
                 getPath();
@@ -1571,6 +1587,7 @@ public class Main extends Game {
             }
             
             ArrayList<Nodo> xChildren = x.computeChildren(x.getPosX(),x.getPosY()); //We generate the children
+            System.out.println("xChildren.size() = " + xChildren.size());
             addChildrenToOpen(xChildren); //We add them to open
         }
     }
@@ -2069,7 +2086,7 @@ public class Main extends Game {
         }
     }
     
-    public void moveR2(long elapsedTime){
+    public void moveR2(/*long elapsedTime*/){
         
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE;
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
@@ -2091,6 +2108,7 @@ public class Main extends Game {
         
         if(auxmX == SQ_SIZE/2 && auxmY == SQ_SIZE/2 && coordIsIntersection(pmX, pmY)){
             
+            System.out.println("moves.size() = " + moves.size());
             setMoveDirection(moves.get(currentDecisionIndex));
             currentDecisionIndex++;
         }

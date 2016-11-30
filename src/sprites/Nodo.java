@@ -138,19 +138,19 @@ public class Nodo implements Comparable<Nodo>{
     
     public void validMove(int posX, int posY){
         //If right is posible
-            if(matrix[posX + 1][posY] != -1 && lastDirection != 1){
+            if(matrix[posX + 1][posY] != -1 && lastDirection != 2){
                 right = true;
             }
         //If left is posible
-            if(matrix[posX - 1][posY] != -1 && lastDirection != 2){
+            if(matrix[posX - 1][posY] != -1 && lastDirection != 4){
                 left = true;
             }
         //If up is posible
-            if(matrix[posX][posY - 1] != -1 && lastDirection != 3){
+            if(matrix[posX][posY - 1] != -1 && lastDirection != 1){
                 up = true;
             }
         //If down is posible
-            if(matrix[posX][posY + 1] != -1 && lastDirection != 4){
+            if(matrix[posX][posY + 1] != -1 && lastDirection != 3){
                 down = true;
             }
     }
@@ -179,7 +179,7 @@ public class Nodo implements Comparable<Nodo>{
             else{
                 
                 pathFound = true;
-                return myChildren;
+                //return myChildren;
             }
         }
         
@@ -197,7 +197,7 @@ public class Nodo implements Comparable<Nodo>{
             
             else{
                 pathFound = true;
-                return myChildren;
+                //return myChildren;
             }
         }
         
@@ -215,7 +215,7 @@ public class Nodo implements Comparable<Nodo>{
             
             else{
                 pathFound = true;
-                return myChildren;
+                //return myChildren;
             }
         }
         
@@ -233,7 +233,7 @@ public class Nodo implements Comparable<Nodo>{
             
             else{
                 pathFound = true;
-                return myChildren;
+                //return myChildren;
             }
         }
             
@@ -256,5 +256,10 @@ public class Nodo implements Comparable<Nodo>{
     public int compareTo(Nodo other){
         
         return Integer.compare((int) this.getValue(), (int) other.getValue());
+    }
+    
+    public String toString(){
+        
+        return "positionX = " + positionX + "; positionY = " + positionY;
     }
 }
