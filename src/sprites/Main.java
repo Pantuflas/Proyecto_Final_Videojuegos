@@ -1557,10 +1557,24 @@ public class Main extends Game {
         getMoves();
     }
     
+    public boolean nodeIsInClosed(Nodo n){
+        
+        for(Nodo nClosed : closed){ //Check whether or not the node n is already in closed!
+            
+            if(nClosed.getPositionX() == n.getPositionX() && nClosed.getPositionY() == n.getPositionY())
+                return true;
+        }
+        
+        return false;
+    }
+    
     public void addChildrenToOpen(ArrayList<Nodo> xChildren){
         
-        for(Nodo n : xChildren)
-            open.add(n);
+        for(Nodo n : xChildren){
+            
+            if(!nodeIsInClosed(n)) //Only add the node to open if it is not in "closed"
+                open.add(n);
+        }
     }
     
     public void getMovementsR2(Nodo startingNode){
@@ -1586,7 +1600,7 @@ public class Main extends Game {
                 return;
             }
             
-            ArrayList<Nodo> xChildren = x.computeChildren(x.getPosX(),x.getPosY()); //We generate the children
+            ArrayList<Nodo> xChildren = x.computeChildren(x.getPositionX(),x.getPositionY()); //We generate the children
             System.out.println("xChildren.size() = " + xChildren.size());
             addChildrenToOpen(xChildren); //We add them to open
         }

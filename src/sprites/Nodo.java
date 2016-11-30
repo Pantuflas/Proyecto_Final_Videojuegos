@@ -50,8 +50,19 @@ public class Nodo implements Comparable<Nodo>{
         currentDirection = direction;
         setLevel(level);
         setMap(map);
-        mapHeight = map.getHeight()/SQ_SIZE - 1;
-        mapWidth = map.getWidth()/SQ_SIZE - 1;
+        
+        if(level <= 3){
+            
+            mapHeight = 15;
+            mapWidth = 15;
+        }
+        
+        else{
+            
+            mapHeight = 23;
+            mapWidth = 19;
+        }
+        
         getClosestDiamondCells();
         setValue();
     }
@@ -159,6 +170,12 @@ public class Nodo implements Comparable<Nodo>{
         
         return matrix[posY][posX] == DIAMOND || matrix[posY][posX] == DOOR;
     }
+    
+    public boolean coordsAreValid(int x, int y){
+        
+        return (x >= 1) && (x < mapWidth - 1) && (y >= 1) && (y < mapHeight - 1);
+    }
+    
     public ArrayList<Nodo> computeChildren(int posX, int posY){
         
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
@@ -167,14 +184,17 @@ public class Nodo implements Comparable<Nodo>{
             
             int nextCell = 1;
             
-            while(nextCell != INTERSECTION){
+            int posX1 = posX;
+            
+            while(coordsAreValid(posX1, posY) && nextCell != INTERSECTION){
                 
-                posX++;
-                nextCell = matrix[posY][posX];
+                posX1++;
+                System.out.println("posX1 = " + posX1 + "; posY = " + posY);
+                nextCell = matrix[posY][posX1];
             }
             
             if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX, posY, 4, (g + 1), 2, level, map));
+                myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map));
             
             else{
                 
@@ -187,13 +207,16 @@ public class Nodo implements Comparable<Nodo>{
             
             int nextCell = 1;
             
-            while(nextCell == 1){
-                posX--;
+            int posX2 = posX;
+            
+            while(coordsAreValid(posX2, posY) && nextCell == 1){
+                
+                posX2--;
                 nextCell = matrix[posY][posX];
             }
             
             if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX, posY, 2, (g + 1), 4, level, map));
+                myChildren.add(new Nodo(matrix, posX2, posY, 2, (g + 1), 4, level, map));
             
             else{
                 pathFound = true;
@@ -205,13 +228,16 @@ public class Nodo implements Comparable<Nodo>{
             
             int nextCell = 1;
             
-            while(nextCell == 1){
-                posY--;
-                nextCell = matrix[posY][posX];
+            int posY1 = posY;
+            
+            while(coordsAreValid(posX, posY1) && nextCell == 1){
+                
+                posY1--;
+                nextCell = matrix[posY1][posX];
             }
             
             if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX, posY, 3, (g + 1), 1, level, map));
+                myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map));
             
             else{
                 pathFound = true;
@@ -223,13 +249,16 @@ public class Nodo implements Comparable<Nodo>{
             
             int nextCell = 1;
             
-            while(nextCell == 1){
-                posY++;
-                nextCell = matrix[posY][posX];
+            int posY2 = posY;
+            
+            while(coordsAreValid(posX, posY2) && nextCell == 1){
+                
+                posY2++;
+                nextCell = matrix[posY2][posX];
             }
             
             if(!isDoorOrDiamond(posX, posY))
-                myChildren.add(new Nodo(matrix, posX, posY, 1, (g + 1), 3, level, map));
+                myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map));
             
             else{
                 pathFound = true;
@@ -243,10 +272,12 @@ public class Nodo implements Comparable<Nodo>{
         
         return parentIndex;
     }
-    public int getPosX(){
+    public int getPositionX(){
+        
         return positionX;
     }
-    public int getPosY(){
+    public int getPositionY(){
+        
         return positionY;
     }
     public boolean foundPath(){
