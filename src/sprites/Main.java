@@ -21,9 +21,9 @@ import java.awt.image.BufferedImage;
 import com.golden.gamedev.object.font.BitmapFont;
 import com.golden.gamedev.object.CollisionManager;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 import java.util.Collections;
 import java.util.Random;
-
 
 /*  
     x[0]  x[1]
@@ -125,6 +125,7 @@ public class Main extends Game {
     private final int CLOSENESS_FACTOR = SQ_SIZE;
     
     private final int EXTRA_CELLS = 6;
+    private final int DOOR = 4;
     
     private int[] directionCounter;
     
@@ -183,6 +184,9 @@ public class Main extends Game {
     private int prevEnemyDirection = -1;
     
     AnimatedSprite sprite3; //R2
+    
+    PriorityQueue<Nodo> open;
+    ArrayList<Nodo> closed;
     
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     
@@ -245,6 +249,9 @@ public class Main extends Game {
     }
     
     public void resetLevel(){
+        
+        open = new PriorityQueue<Nodo>();
+        closed = new ArrayList<Nodo>();
         
         fondo = new ImageBackground(map);
         fondo.setClip(0, 0, CLIP_WIDTH, CLIP_HEIGHT);     // CLIP_WIDTH = 960, CLIP_HEIGHT = 480                 
@@ -330,6 +337,7 @@ public class Main extends Game {
         fixControlMatrixBorders();
         addIntersectionsToControlMatrix();
         addDiamondsToControlMatrix();
+        addDoorToControlMatrix();
         
         System.out.println();
         
@@ -388,7 +396,7 @@ public class Main extends Game {
         
         prevCurrTime = currTime;
         
-        System.out.println("HERE!! currTime = " + currTime);
+        //System.out.println("HERE!! currTime = " + currTime);
         ArrayList<Integer> myLX = new ArrayList<Integer>();
         ArrayList<Integer> myLY = new ArrayList<Integer>();
         
@@ -426,6 +434,8 @@ public class Main extends Game {
                     randomInt--;
                 }
             }
+        
+        addDoorToControlMatrix();
     }
     
      public void resetBucketCoords(){
@@ -744,11 +754,26 @@ public class Main extends Game {
             
             for(int j = 0; j < width; j++){
                 
-                for(int k = 0; k < 4; k++){
+                for(int k = 0; k < TOT_COINS; k++){
                     
                     if(j == totCoinsCells2[k][0] && i == totCoinsCells2[k][1])
                         controlMatrix[i][j] = DIAMOND;
                 }
+            }
+        }
+    }
+    
+    public void addDoorToControlMatrix(){
+        
+        int height = mapHeight/SQ_SIZE;
+        int width = mapWidth/SQ_SIZE;
+        
+        for(int i = 0; i < height; i++){
+            
+            for(int j = 0; j < width; j++){
+                
+                if(j == doorX && i == doorY)
+                    controlMatrix[i][j] = DOOR;
             }
         }
     }
@@ -1477,15 +1502,43 @@ public class Main extends Game {
         }
     }
     
+    public void getPath(){
+        
+        //Take the path from the "closed" array list
+        
+        
+    }
+    
+    public void smartMoveR2(Nodo startingNode){
+        
+        open.clear();
+        closed.clear();
+        
+        open.add(startingNode);
+        
+        while(!open.isEmpty()){
+            
+            Nodo x = open.poll();
+            
+            closed.add(x); 
+            
+            if(x.getPathFound() == true){ //It got either a diamond or the door
+                
+                getPath();
+            }
+        }
+    }
+    
     public void moveR2(long elapsedTime){
         
-        setEnemyCoords(); 
-        System.out.println("coordX = " + enemyCoordX + "; coordY = " + enemyCoordY);
-        pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((totSpiders[0][].getX()+13)); //X Cell*/
-        pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((sprite3.getY()+13)); //Y Cell*/
         
-        auxmX = enemyCoordX - SQ_SIZE*pmX;/*sprite3.getX()-(65.5*pmX); //X position in cell*/
-        auxmY = enemyCoordY - SQ_SIZE*pmY + 16;/*sprite3.getY()-(65.5*pmY); //Y Position in cell*/
+        
+        /*setEnemyCoords(); 
+        pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((totSpiders[0][].getX()+13)); //X Cell
+        pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((sprite3.getY()+13)); //Y Cell
+        
+        auxmX = enemyCoordX - SQ_SIZE*pmX + SQ_SIZE/2;/*sprite3.getX()-(65.5*pmX); //X position in cell
+        auxmY = enemyCoordY - SQ_SIZE*pmY + SQ_SIZE/2;/*sprite3.getY()-(65.5*pmY); //Y Position in cell
         
         if(auxmX < 0)
             auxmX *= -1;
@@ -1943,7 +1996,7 @@ public class Main extends Game {
         System.out.println("mX3 = " + mX3 + "; mY3 = " + mY3);
         sprite3.move(mX3, mY3);
         sprite3.update(elapsedTime);
-        changeAnimation(1, direc3);
+        changeAnimation(1, direc3);*/
     } // movimiento de sprite 3 (el enemigo)
     
     public boolean areGoodCoords(int i, int j){
