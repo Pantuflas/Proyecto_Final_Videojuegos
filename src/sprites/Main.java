@@ -126,6 +126,7 @@ public class Main extends Game {
     
     private final int EXTRA_CELLS = 6;
     private final int DOOR = 4;
+    private final int INTERSECTION = 2;
     
     private int[] directionCounter;
     
@@ -187,7 +188,8 @@ public class Main extends Game {
     
     PriorityQueue<Nodo> open; //For the A* algorithm
     ArrayList<Nodo> closed; //For the A* algorithm
-    ArrayList<Integer> path; //Stores the movements
+    ArrayList<Integer> path; //Stores the tree path of nodes to get to a position
+    ArrayList<Integer> moves; //Stores the required directions to get to a position
     
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     
@@ -741,7 +743,7 @@ public class Main extends Game {
                 
                 if(controlMatrix[i][j] > 0)
                     if(isCruise(j, i))
-                        controlMatrix[i][j] = 2;
+                        controlMatrix[i][j] = INTERSECTION;
             }
         }
     }
@@ -1503,13 +1505,40 @@ public class Main extends Game {
         }
     }
     
+    public void getMoves(){
+        
+        moves.clear();
+        
+        for(int i = 0; i < path.size(); i++){
+            
+            int closedIndex = path.get(i); //Get the index of the child in the closed array
+            moves.add(closed.get(closedIndex).getCurrentDirection()); //Get the direction
+        }
+    } 
+    
     public void getPath(){
         
         //Take the path from the "closed" array list
         
         path.clear();
         
+        int index = closed.size() - 1;
+       
+       //System.out.println("index = " + index);
+       
+        while(index >= 0){
+           
+           path.add(0, closed.get(index).getParentIndex());
+           
+           if(index == 0)
+               return;
+           
+           index = closed.get(index).getParentIndex();
+           
+           //System.out.println("index = " + index);
+        }
         
+        getMoves();
     }
     
     public void addChildrenToOpen(ArrayList<Nodo> xChildren){
@@ -1518,7 +1547,7 @@ public class Main extends Game {
             open.add(n);
     }
     
-    public void smartMoveR2(Nodo startingNode){
+    public void getMovementsR2(Nodo startingNode){
         
         open.clear();
         closed.clear();
@@ -1542,9 +1571,7 @@ public class Main extends Game {
         }
     }
     
-    public void moveR2(long elapsedTime){
-        
-        
+    public void randomMoveR2(long elapsedTime){
         
         /*setEnemyCoords(); 
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; /*PosSpriteX((totSpiders[0][].getX()+13)); //X Cell
@@ -2010,7 +2037,60 @@ public class Main extends Game {
         sprite3.move(mX3, mY3);
         sprite3.update(elapsedTime);
         changeAnimation(1, direc3);*/
-    } // movimiento de sprite 3 (el enemigo)
+    }
+    
+    public boolean coordIsIntersection(int x, int y){
+        
+        return controlMatrix[y][x] == INTERSECTION;
+    }
+    
+    public void setMoveDirection(int direction){
+        switch(direction){
+            case 1:
+                mX3 = -1;
+                mY3 = 0;
+                break;
+            case 2:
+                mX3 = 0;
+                mY3 = 1;
+                break;
+            case 3:
+                mX3 = 1;
+                mY3 = 0;
+                break;
+            case 4:
+                mX3 = 0;
+                mY3 = -1;
+                break;
+        }
+    }
+    
+    public void moveR2(long elapsedTime){
+        
+        pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE;
+        pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
+        
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0);
+        
+        getMovementsR2(startingNode);
+        
+        auxmX = enemyCoordX - SQ_SIZE*pmX + SQ_SIZE/2; //X position in cell
+        auxmY = enemyCoordY - SQ_SIZE*pmY + SQ_SIZE/2; //Y Position in cell
+        
+        if(auxmX < 0)
+            auxmX *= -1;
+        
+        if(auxmY < 0)
+            auxmY *= -1;
+        
+        int currentDecisionIndex = 0;
+        
+        if(auxmX == SQ_SIZE/2 && auxmY == SQ_SIZE/2 && coordIsIntersection(pmX, pmY)){
+            
+            setMoveDirection(moves.get(currentDecisionIndex));
+            currentDecisionIndex++;
+        }
+    } 
     
     public boolean areGoodCoords(int i, int j){
         

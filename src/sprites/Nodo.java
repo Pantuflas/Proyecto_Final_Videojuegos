@@ -20,25 +20,28 @@ public class Nodo implements Comparable<Nodo>{
     boolean down = false;
     boolean pathFound = false;
     private int currentDirection;
-    int lastDirection = 0; //1 right, 2 left, 3 up, 4 down
+    int lastDirection = 0; //2 right, 4 left, 1 up, 3 down
     int positionX = 0;
     int positionY = 0;
     int matrix[][]; //Control matrix from the main class
     int g = 0;
-    int father = 0;
+    int parentIndex = 0;
     
-    public Nodo (int[][] controlMatrix,int posX, int posY, int last, int lastPos){
-        
+    public Nodo (int[][] controlMatrix,int posX, int posY, int prevDirection, int height, int direction){
         matrix = controlMatrix;
         positionX = posX;
         positionY = posY;
-        lastDirection = last; 
-        g = lastPos;
-        father = g - 1;
+        lastDirection = prevDirection; 
+        g = height;
+        parentIndex = g - 1;
         validMove(positionX, positionY);
+        currentDirection = direction;
     }
     
-    
+    public int getCurrentDirection(){
+        
+        return currentDirection;
+    }
     
     public boolean getPathFound(){
         
@@ -79,7 +82,7 @@ public class Nodo implements Comparable<Nodo>{
                 nextCell = matrix[posX][posY];
             }
             if(matrix[posX][posY] == 2)
-                myChildren.add(new Nodo(matrix, posX, posY, 2, (g + 1)));
+                myChildren.add(new Nodo(matrix, posX, posY, 4, (g + 1), 2));
             else{
                 pathFound = true;
             }
@@ -91,7 +94,7 @@ public class Nodo implements Comparable<Nodo>{
                 nextCell = matrix[posX][posY];
             }
             if(matrix[posX][posY] == 2)
-                myChildren.add(new Nodo(matrix, posX, posY, 1, (g + 1)));
+                myChildren.add(new Nodo(matrix, posX, posY, 2, (g + 1), 4));
             else{
                 pathFound = true;
             }
@@ -103,7 +106,7 @@ public class Nodo implements Comparable<Nodo>{
                 nextCell = matrix[posX][posY];
             }
             if(matrix[posX][posY] == 2)
-                myChildren.add(new Nodo(matrix, posX, posY, 4, (g + 1)));
+                myChildren.add(new Nodo(matrix, posX, posY, 3, (g + 1), 1));
             else{
                 pathFound = true;
             }
@@ -115,7 +118,7 @@ public class Nodo implements Comparable<Nodo>{
                 nextCell = matrix[posX][posY];
             }
             if(matrix[posX][posY] == 2)
-                myChildren.add(new Nodo(matrix, posX, posY, 3, (g + 1)));
+                myChildren.add(new Nodo(matrix, posX, posY, 1, (g + 1), 3));
             else{
                 pathFound = true;
             }
@@ -123,8 +126,9 @@ public class Nodo implements Comparable<Nodo>{
             
         return myChildren;
     }
-    public int getFather(){
-        return father;
+    public int getParentIndex(){
+        
+        return parentIndex;
     }
     public int getPosX(){
         return positionX;
