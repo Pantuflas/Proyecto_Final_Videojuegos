@@ -31,7 +31,9 @@ public class Nodo implements Comparable<Nodo>{
     private int level;
     private final int DIAMOND = 3;
     private final int DOOR = 4;
+    private final int BLOCKED_CELL = -1;
     private final int INTERSECTION = 2;
+    private final int OPEN_CELL = 2;
     private final int SQ_SIZE = 32;
     private int closestDiamondXCell;
     private int closestDiamondYCell;
@@ -147,23 +149,32 @@ public class Nodo implements Comparable<Nodo>{
         return g;
     }
     
+    public int getLastDirection(){
+        
+        return lastDirection;
+    }
+    
     public void validMove(int posX, int posY){
-        //If right is posible
-            if(matrix[posX + 1][posY] != -1 && lastDirection != 2){
-                right = true;
-            }
-        //If left is posible
-            if(matrix[posX - 1][posY] != -1 && lastDirection != 4){
-                left = true;
-            }
-        //If up is posible
-            if(matrix[posX][posY - 1] != -1 && lastDirection != 1){
+            
+            if(coordsAreValid(positionX, positionY - 1) && matrix[positionY - 1][positionX] != BLOCKED_CELL)
                 up = true;
-            }
-        //If down is posible
-            if(matrix[posX][posY + 1] != -1 && lastDirection != 3){
+            else
+                up = false;
+            
+            if(coordsAreValid(positionX, positionY + 1) &&  matrix[positionY + 1][positionX ] != BLOCKED_CELL)
                 down = true;
-            }
+            else
+                down = false;
+            
+            if(coordsAreValid(positionX + 1, positionY) &&  matrix[positionY][positionX  + 1] != BLOCKED_CELL)
+                right = true;
+            else
+                right = false;
+            
+            if(coordsAreValid(positionX - 1, positionY) && matrix[positionY][positionX - 1] != BLOCKED_CELL)
+                left = true;
+            else
+                left = false;
     }
     
     public boolean isDoorOrDiamond(int posX, int posY){
@@ -177,7 +188,7 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){
-        
+        System.out.println("ComputeCholdren!!!!");
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
         
         if(right == true){
@@ -186,7 +197,7 @@ public class Nodo implements Comparable<Nodo>{
             
             int posX1 = posX;
             
-            while(coordsAreValid(posX1, posY) && nextCell != INTERSECTION){
+            while(coordsAreValid(posX1, posY) && nextCell == OPEN_CELL){
                 
                 posX1++;
                 System.out.println("posX1 = " + posX1 + "; posY = " + posY);
@@ -209,7 +220,7 @@ public class Nodo implements Comparable<Nodo>{
             
             int posX2 = posX;
             
-            while(coordsAreValid(posX2, posY) && nextCell == 1){
+            while(coordsAreValid(posX2, posY) && nextCell == OPEN_CELL){
                 
                 posX2--;
                 nextCell = matrix[posY][posX];
@@ -230,7 +241,7 @@ public class Nodo implements Comparable<Nodo>{
             
             int posY1 = posY;
             
-            while(coordsAreValid(posX, posY1) && nextCell == 1){
+            while(coordsAreValid(posX, posY1) && nextCell == OPEN_CELL){
                 
                 posY1--;
                 nextCell = matrix[posY1][posX];
@@ -251,17 +262,20 @@ public class Nodo implements Comparable<Nodo>{
             
             int posY2 = posY;
             
-            while(coordsAreValid(posX, posY2) && nextCell == 1){
+            while(coordsAreValid(posX, posY2) && nextCell == OPEN_CELL){
                 
                 posY2++;
                 nextCell = matrix[posY2][posX];
             }
             
-            if(!isDoorOrDiamond(posX, posY))
+            if(!isDoorOrDiamond(posX, posY)){
                 myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map));
+                System.out.println("Hijo abajo!!!!!");
+            }
             
             else{
                 pathFound = true;
+                System.out.println("Cambio!!!!!");
                 //return myChildren;
             }
         }
@@ -287,6 +301,13 @@ public class Nodo implements Comparable<Nodo>{
     public int compareTo(Nodo other){
         
         return Integer.compare((int) this.getValue(), (int) other.getValue());
+    }
+    
+    public boolean equals(Nodo other){
+        
+        return (this.getPositionX() == other.getPositionX() && 
+                this.getPositionY() == other.getPositionY() &&
+                this.getLastDirection() == other.getLastDirection());
     }
     
     public String toString(){
