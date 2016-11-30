@@ -9,6 +9,9 @@ package sprites;
  *
  * @author Usuario1
  */
+
+import java.util.ArrayList;
+
 public class Nodo implements Comparable<Nodo>{
     
     boolean right = false;
@@ -16,6 +19,7 @@ public class Nodo implements Comparable<Nodo>{
     boolean up = false;
     boolean down = false;
     boolean pathFound = false;
+    private int currentDirection;
     int lastDirection = 0; //1 right, 2 left, 3 up, 4 down
     int positionX = 0;
     int positionY = 0;
@@ -33,6 +37,8 @@ public class Nodo implements Comparable<Nodo>{
         father = g - 1;
         validMove(positionX, positionY);
     }
+    
+    
     
     public boolean getPathFound(){
         
@@ -62,56 +68,60 @@ public class Nodo implements Comparable<Nodo>{
                 down = true;
             }
     }
-    public void findPathDimond(int posX, int posY){
+    public ArrayList<Nodo> computeChildren(int posX, int posY){
+        
+        ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
+        
+        if(right == true){
+            int nextCell = 1;
+            while(nextCell == 1){
+                posX++;
+                nextCell = matrix[posX][posY];
+            }
+            if(matrix[posX][posY] == 2)
+                myChildren.add(new Nodo(matrix, posX, posY, 2, (g + 1)));
+            else{
+                pathFound = true;
+            }
+        }
+        if(left == true){
+            int nextCell = 1;
+            while(nextCell == 1){
+                posX--;
+                nextCell = matrix[posX][posY];
+            }
+            if(matrix[posX][posY] == 2)
+                myChildren.add(new Nodo(matrix, posX, posY, 1, (g + 1)));
+            else{
+                pathFound = true;
+            }
+        }
+        if(up == true){
+            int nextCell = 1;
+            while(nextCell == 1){
+                posY--;
+                nextCell = matrix[posX][posY];
+            }
+            if(matrix[posX][posY] == 2)
+                myChildren.add(new Nodo(matrix, posX, posY, 4, (g + 1)));
+            else{
+                pathFound = true;
+            }
+        }
+        if(down == true){
+            int nextCell = 1;
+            while(nextCell == 1){
+                posY++;
+                nextCell = matrix[posX][posY];
+            }
+            if(matrix[posX][posY] == 2)
+                myChildren.add(new Nodo(matrix, posX, posY, 3, (g + 1)));
+            else{
+                pathFound = true;
+            }
+        }
             
-            if(right == true){
-                int nextCell = 1;
-                while(nextCell == 1){
-                    posX++;
-                    nextCell = matrix[posX][posY];
-                }
-                if(matrix[posX][posY] == 2)
-                    new Nodo(matrix, posX, posY, 2, (g+1));
-                else{
-                    pathFound = true;
-                }
-            }
-            if(left == true){
-                int nextCell = 1;
-                while(nextCell == 1){
-                    posX--;
-                    nextCell = matrix[posX][posY];
-                }
-                if(matrix[posX][posY] == 2)
-                    new Nodo(matrix, posX, posY, 1, (g+1));
-                else{
-                    pathFound = true;
-                }
-            }
-            if(up == true){
-                int nextCell = 1;
-                while(nextCell == 1){
-                    posY--;
-                    nextCell = matrix[posX][posY];
-                }
-                if(matrix[posX][posY] == 2)
-                    new Nodo(matrix, posX, posY, 4, (g+1));
-                else{
-                    pathFound = true;
-                }
-            }
-            if(down == true){
-                int nextCell = 1;
-                while(nextCell == 1){
-                    posY++;
-                    nextCell = matrix[posX][posY];
-                }
-                if(matrix[posX][posY] == 2)
-                    new Nodo(matrix, posX, posY, 3, (g+1));
-                else{
-                    pathFound = true;
-                }
-            }
+        return myChildren;
     }
     public int getFather(){
         return father;

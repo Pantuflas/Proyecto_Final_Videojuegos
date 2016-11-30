@@ -150,8 +150,8 @@ public class Main extends Game {
     private final String bucketName = "poket";
     private int currMap = (currLevel < 3) ? 0 : 1;
     
-    private final int CLIP_WIDTH = 960;
-    private final int CLIP_HEIGHT = 480;
+    private static final int CLIP_WIDTH = 960;
+    private static final int CLIP_HEIGHT = 480;
     
     private final int characterStrip = 8;
     private final int enemyStrip = 5;
@@ -185,8 +185,9 @@ public class Main extends Game {
     
     AnimatedSprite sprite3; //R2
     
-    PriorityQueue<Nodo> open;
-    ArrayList<Nodo> closed;
+    PriorityQueue<Nodo> open; //For the A* algorithm
+    ArrayList<Nodo> closed; //For the A* algorithm
+    ArrayList<Integer> path; //Stores the movements
     
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     
@@ -1506,7 +1507,15 @@ public class Main extends Game {
         
         //Take the path from the "closed" array list
         
+        path.clear();
         
+        
+    }
+    
+    public void addChildrenToOpen(ArrayList<Nodo> xChildren){
+        
+        for(Nodo n : xChildren)
+            open.add(n);
     }
     
     public void smartMoveR2(Nodo startingNode){
@@ -1525,7 +1534,11 @@ public class Main extends Game {
             if(x.getPathFound() == true){ //It got either a diamond or the door
                 
                 getPath();
+                return;
             }
+            
+            ArrayList<Nodo> xChildren = x.computeChildren(x.getPosX(),x.getPosY()); //We generate the children
+            addChildrenToOpen(xChildren); //We add them to open
         }
     }
     
@@ -2313,7 +2326,7 @@ public class Main extends Game {
     public static void main(String[] args) {
         // TODO code application logic here
         GameLoader game = new GameLoader();
-        game.setup(new Main(), new Dimension(960, 480), false);
+        game.setup(new Main(), new Dimension(CLIP_WIDTH, CLIP_HEIGHT), false);
         game.start();
     }
 }
