@@ -385,6 +385,9 @@ public class Main extends Game {
         velocidad = new Timer(1);
 
         allIsReady = true;
+        
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false);
+        getMovementsR2(startingNode);
     }
 
     public void resetDoorCoords() {
@@ -1296,12 +1299,19 @@ public class Main extends Game {
             sprite3.move(mX3, mY3);
         }
 
-        if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
+        /*if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
 
             prevPickedCoins2++;
+            pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; 
+            pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
             moveR2();
-        }
-
+        }*/
+        enemyCoordX = (int)sprite3.getX();
+        enemyCoordY = (int)sprite3.getY();
+        pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; 
+        pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
+        if(moves.size() != 0)
+            moveR2();
         fondo.setToCenter(agente);
         fondo.update(elapsedTime);
         grupoAgente.update(elapsedTime);
@@ -2074,20 +2084,25 @@ public class Main extends Game {
             case 1:
                 mX3 = 0;
                 mY3 = -1;
+                direc3 = 1;
                 break;
             case 2:
                 mX3 = 1;
                 mY3 = 0;
+                direc3 = 2;
                 break;
             case 3:
                 mX3 = 0;
                 mY3 = 1;
+                direc3 = 3;
                 break;
             case 4:
                 mX3 = -1;
                 mY3 = 0;
+                direc3 = 4;
                 break;
         }
+        changeAnimation(1, direc3);
     }
 
     public void moveR2(/*long elapsedTime*/) {
@@ -2095,9 +2110,9 @@ public class Main extends Game {
         pmX = (enemyCoordX + SQ_SIZE / 2) / SQ_SIZE;
         pmY = (enemyCoordY + SQ_SIZE / 2) / SQ_SIZE;
 
-        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map, false);
+        
 
-        getMovementsR2(startingNode);
+
 
         auxmX = enemyCoordX - SQ_SIZE * pmX + SQ_SIZE / 2; //X position in cell
         auxmY = enemyCoordY - SQ_SIZE * pmY + SQ_SIZE / 2; //Y Position in cell
@@ -2109,16 +2124,29 @@ public class Main extends Game {
         if (auxmY < 0) {
             auxmY *= -1;
         }
-
-        int currentDecisionIndex = 0;
-        for(int i = 0; i<moves.size(); i++){
+        
         if (auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2) {
+            for(int i = 0; i<closed.size(); i++){
+                if(closed.get(i).getPositionX() == pmX && closed.get(i).getPositionY() == pmY){
+                    setMoveDirection(closed.get(i).getCurrentDirection());
+                    System.out.println("HOLA YA CAMBIE LA DIRECCION "+mX3+"    "+mY3+"    POS"+pmX+"     "+pmY);
+                    System.out.println("POS DE NODO "+closed.get(i).getPositionX()+"    "+closed.get(i).getPositionY());
+                    break;
+                }
+            }
+        }
 
-            System.out.println("moves.size() = " + moves.get(i));
-            setMoveDirection(moves.get(i));
-            currentDecisionIndex++;
-        }
-        }
+        /*int currentDecisionIndex = 0;
+        for(int i = 0; i<moves.size(); i++){
+            if (auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2) {
+
+                System.out.println("moves.size() = " + moves.get(i));
+                setMoveDirection(moves.get(i));
+                currentDecisionIndex++;
+            }
+        }*/
+        
+        
     }
 
     public boolean areGoodCoords(int i, int j) {
