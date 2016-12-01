@@ -168,6 +168,13 @@ public class Main extends Game {
 
     private int bobX = -1;
     private int bobY = -1;
+    private int bobXCell = CHARACTER_START_X / SQ_SIZE;
+    private int bobYCell = CHARACTER_START_Y / SQ_SIZE;
+    private int bobXAux = -1;
+    private int bobYAux = -1;
+    private int bobDirection = 0;
+    private int bobMoveX = 0;
+    private int bobMoveY = 0;
 
     /*
         
@@ -1573,8 +1580,76 @@ public class Main extends Game {
     }
     
     public void moveCharacterMemo(long elapsedTime){
+        bobX = (int)agente.getX();
+        bobY = (int)agente.getY();
+        bobXCell = bobX/SQ_SIZE;
+        bobYCell = bobY/SQ_SIZE;
+        bobXAux = (int)agente.getX() - (SQ_SIZE*bobXCell) + (SQ_SIZE/2);
+        bobYAux = (int)agente.getY() - (SQ_SIZE*bobYCell) + (SQ_SIZE/2);
         
+        if(keyDown(KeyEvent.VK_D)){
+            bobDirection = 2;
+        }
+        if(keyDown(KeyEvent.VK_A)){
+            bobDirection = 4;
+        }
+        if(keyDown(KeyEvent.VK_W)){
+            bobDirection = 1;
+        }
+        if(keyDown(KeyEvent.VK_S)){
+            bobDirection = 3;
+        }
         
+        if(bobXAux == SQ_SIZE/2){
+            switch(bobDirection){
+                case 1:
+                    if(controlMatrix[bobYCell - 1][bobXCell] != BLOCKED_CELL){
+                        bobMoveY = -1;
+                        bobMoveX = 0;
+                    }else{
+                        bobMoveY = 0;
+                        bobMoveX = 0;
+                        bobDirection = 0;
+                    }
+                        
+                    break;
+                    
+                case 2:
+                    if(controlMatrix[bobYCell][bobXCell + 1] != BLOCKED_CELL){
+                        bobMoveX = 1;
+                        bobMoveY = 0;
+                    }else{
+                        bobMoveY = 0;
+                        bobMoveX = 0;
+                        bobDirection = 0;
+                    }
+                    break;
+                    
+                case 3:
+                    if(controlMatrix[bobYCell + 1][bobXCell] != BLOCKED_CELL){
+                        bobMoveY = 1;
+                        bobMoveX = 0;
+                    }else{
+                        bobMoveY = 0;
+                        bobMoveX = 0;
+                        bobDirection = 0;
+                    }
+                    break;
+                    
+                case 4:
+                    if(controlMatrix[bobYCell][bobXCell - 1] != BLOCKED_CELL){
+                        bobMoveX = -1;
+                        bobMoveY = 0;
+                    }else{
+                        bobMoveY = 0;
+                        bobMoveX = 0;
+                        bobDirection = 0;
+                    }
+                    break;
+            }
+        }
+        agente.move(bobMoveX, bobMoveY);
+ 
     }
 
     public void resetCharacter() {
