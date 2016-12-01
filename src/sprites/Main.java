@@ -159,7 +159,7 @@ public class Main extends Game {
     /*32*//*SQ_SIZE + SQ_SIZE/2*/
     ;
     private final int ENEMY_STARTPOS_X = 15 * SQ_SIZE; //11*/ //480
-    private final int ENEMY_STARTPOS_Y = 1 * SQ_SIZE;
+    private final int ENEMY_STARTPOS_Y = 15 * SQ_SIZE;
     /*96*/ //32
 
     private int bobX = -1;
@@ -177,6 +177,8 @@ public class Main extends Game {
 
     private int mX3 = 0;
     private int mY3 = 0;
+    
+    private boolean finish = false;
 
     private int enemyCoordX = ENEMY_STARTPOS_X;
     private int enemyCoordY = ENEMY_STARTPOS_Y;
@@ -1350,6 +1352,7 @@ public class Main extends Game {
         }*/
 
         if (keyPressed(KeyEvent.VK_SPACE)) {
+            
             shoot(agente.getX() + SQ_SIZE / 2, agente.getY() + SQ_SIZE / 2);
         }
 
@@ -2142,23 +2145,9 @@ public class Main extends Game {
         if(auxmY < 0)
             auxmY *= -1;
         
-        if(auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2){
-            
-            /*for(int i = 0; i < closed.size(); i++){
-                
-                System.out.println("pmX = " + pmX + "; pmY = " + pmY);
-                System.out.println("closed.get(" + i + ").getPositionX() = " + closed.get(i).getPositionX() + "; closed.get(" + i + ").getPositionY() = " + closed.get(i).getPositionY());
-                
-                if(closed.get(i).getPositionX() == pmX && closed.get(i).getPositionY() == pmY){
-                    
-                    MOVER2_COUNTER++;
-                    System.out.println("MOVER2_COUNTER = " + MOVER2_COUNTER);
-                    setMoveDirection(closed.get(i).getCurrentDirection());
-                    System.out.println("HOLA YA CAMBIE LA DIRECCION "+mX3+"    "+mY3+"    POS"+pmX+"     "+pmY);
-                    System.out.println("POS DE NODO " + closed.get(i).getPositionX() + "    " + closed.get(i).getPositionY());
-                    break;
-                }
-            }*/
+        int winningIndex = -1;
+        
+        if(auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2){ //If you're in the center of a cell
             
             for(int i = 0; i < solutionNodes.size(); i++){
                 
@@ -2166,22 +2155,54 @@ public class Main extends Game {
                 
                 if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY){
                     
+                    winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
                 }
                 if(solutionNodes.get(i).getPositionX() == (pmX-1) && solutionNodes.get(i).getPositionY() == pmY){
                     
+                    winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
                 }
                 if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY-1)){
                     
+                    winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
                 }
                 if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY+1)){
                     
+                    winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
                 }
             }
+            
+            if(finish == true){
+                System.out.println("PARA YA LLEGASTE");
+                stopEnemy();
+                open.clear();
+                closed.clear();
+                solutionNodes.clear();
+                getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+                finish = false;
+            }
+            
+            if(winningIndex == solutionNodes.size() - 1){
+                finish = true;
+                System.out.println("winningIndex = "+winningIndex);
+                System.out.println("pmX = "+pmX+"; pmY = "+pmY);
+                System.out.println("solutionNodes.get(" + winningIndex + ").getPositionX() = " + solutionNodes.get(winningIndex).getPositionX() + "; solutionNodes.get(" + winningIndex + ").getPositionY() = " + solutionNodes.get(winningIndex).getPositionY());
+                
+            }
+            
+            
+            
+            if(winningIndex == solutionNodes.size() - 1 && pmX == solutionNodes.get(winningIndex).getPositionX() && pmY == solutionNodes.get(winningIndex).getPositionY()){ //If it is the node in which the diamond is
+                System.out.println("PARA YA LLEGASTE");
+                stopEnemy();
+                getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+            }
         }
+        
+        
 
         /*int currentDecisionIndex = 0;
         for(int i = 0; i<moves.size(); i++){
@@ -2234,12 +2255,26 @@ public class Main extends Game {
                         playSound("sounds/coin.wav");
                         totCoins2[i] = null;
                         pickedCoins2++; //Enemy's counter
-                    } else {
+                        deleteDiamond(totCoinsCells2[i][0], totCoinsCells2[i][1]);
+                    } 
+                    
+                    else {
                         totCoins2[i].update(elapsedTime);
                     }
                 }
             }
         }
+    }
+    
+    public void deleteDiamond(int x, int y){
+        
+        controlMatrix[y][x] = OPEN_CELL;
+    }
+    
+    public void stopEnemy(){
+        
+        mX3 = 0;
+        mY3 = 0;
     }
 
     public void render(Graphics2D g) {
