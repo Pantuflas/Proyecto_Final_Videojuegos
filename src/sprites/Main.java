@@ -57,6 +57,7 @@ public class Main extends Game {
     Timer velocidad;
 
     private int currBullets;
+    private int currRocks;
 
     //////////////////////////////////////////////////
     private Sprite startScreen;
@@ -123,6 +124,7 @@ public class Main extends Game {
     private final int EXTRA_CELLS = 6;
     private final int DOOR = 4;
     private final int INTERSECTION = 2;
+    private final int INITIAL_ROCKS = 3;
 
     private int[] directionCounter;
 
@@ -136,6 +138,7 @@ public class Main extends Game {
     private long prevCurrTime = -1;
     private final long TIME_FACTOR = 999999999;
     private final long DOOR_TIME_FACTOR = 10;
+    private final int ROCK_TIME = 5;
 
     private final int totalMaps = 2;
 
@@ -146,6 +149,7 @@ public class Main extends Game {
     private final String[] mapNames = {"Mapa1/Mapa_1_Bordes", "Mapa2/Mapa_2_Bordes"};
     private final String doorName = "red_door";
     private final String bucketName = "poket";
+    private final String rockName = "rock";
     private int currMap = (currLevel < 3) ? 0 : 1;
 
     private static final int CLIP_WIDTH = 960;
@@ -179,7 +183,8 @@ public class Main extends Game {
     private int mY3 = 0;
     
     private boolean finish = false;
-
+    private boolean rockPlaced = false;
+    
     private int enemyCoordX = ENEMY_STARTPOS_X;
     private int enemyCoordY = ENEMY_STARTPOS_Y;
     private int direc3 = 0;
@@ -192,6 +197,9 @@ public class Main extends Game {
     ArrayList<Integer> path; //Stores the tree path of nodes to get to a position
     ArrayList<Integer> moves; //Stores the required directions to get to a position
     ArrayList<Nodo> solutionNodes;
+    
+    ArrayList<Rock> placedRocks;
+    ArrayList<Sprite> rocksSprites;
 
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     private boolean allIsReady = false;
@@ -219,6 +227,7 @@ public class Main extends Game {
 
         bsLoader.storeImages("2_0", getImages("images/" + doorName + ".png", 1, 1));
         bsLoader.storeImages("3_0", getImages("images/" + bucketName + ".png", 1, 1));
+        bsLoader.storeImages("4_0", getImages("images/" + rockName + ".png", 1, 1));
         ///////////////////////////////////////////////////////////////////////////////////
 
         map = getImage(mapNames[currMap] + ".png");
@@ -262,6 +271,8 @@ public class Main extends Game {
         open = new PriorityQueue<Nodo>();
         closed = new ArrayList<Nodo>();
         solutionNodes = new ArrayList<Nodo>();
+        placedRocks = new ArrayList<Rock>();
+        rocksSprites = new ArrayList<Sprite>(); //Where the rocks' images are stored!
 
         fondo = new ImageBackground(map);
         fondo.setClip(0, 0, CLIP_WIDTH, CLIP_HEIGHT);     // CLIP_WIDTH = 960, CLIP_HEIGHT = 480                 
@@ -283,6 +294,7 @@ public class Main extends Game {
         fillControlMatrix();
 
         currBullets = 100/*AM_SPIDERS*4*/;
+        currRocks = 0; //It starts without rocks!
 
         ///////////////////////////////////////////////////////////
         pickedCoins1 = 0;
@@ -442,7 +454,7 @@ public class Main extends Game {
                         puerta.setX(SQ_SIZE * doorX);
                         puerta.setY(SQ_SIZE * doorY);
 
-                        System.out.println("doorX = " + doorX + "; doorY = " + doorY);
+                        //System.out.println("doorX = " + doorX + "; doorY = " + doorY);
                         
                         addDoorToControlMatrix();
                         controlMatrix[auxDoorY][auxDoorX] = OPEN_CELL; //Delete the previous door coords
@@ -492,7 +504,7 @@ public class Main extends Game {
                         bucket.setX(SQ_SIZE * bucketX);
                         bucket.setY(SQ_SIZE * bucketY);
 
-                        System.out.println("bucketX = " + bucketX + "; bucketY = " + bucketY);
+                        //System.out.println("bucketX = " + bucketX + "; bucketY = " + bucketY);
 
                         return;
                     }
@@ -929,7 +941,7 @@ public class Main extends Game {
 
             case 2:
 
-                levelStarted[2] = true;
+                levelStarted[2] = true; //Level 1
 
                 if (pickedCoins1 == TOT_COINS + 1) {
                     currLevel++;
@@ -964,7 +976,7 @@ public class Main extends Game {
 
             case 4:
 
-                if (levelStarted[4] == false) {
+                if (levelStarted[4] == false) { //Level 2
 
                     startTime = (long) System.nanoTime() / TIME_FACTOR;
                     TOT_COINS *= 2;
@@ -1304,7 +1316,8 @@ public class Main extends Game {
         //System.out.println();
         if (velocidad.action(elapsedTime)) {
 
-            moveCharacter(elapsedTime);
+            //moveCharacter(elapsedTime);
+            moveCharacterMemo(elapsedTime);
             //moveEnemies(elapsedTime); 
 
             sprite3.move(mX3, mY3);
@@ -1353,13 +1366,35 @@ public class Main extends Game {
         }
 
         colisionadorAB.checkCollision();
-        /* if(colisionadorAB.getCollision()){
+       
+        if(colisionadorAB.getCollision()){ //Agent - bucket collision
             
-        }*/
+            currRocks = INITIAL_ROCKS;
+        }
+        
+        System.out.println("currRocks = " + currRocks);
+        
+        updateRocks();
 
         if (keyPressed(KeyEvent.VK_SPACE)) {
             
-            shoot(agente.getX() + SQ_SIZE / 2, agente.getY() + SQ_SIZE / 2);
+            //shoot(agente.getX() + SQ_SIZE / 2, agente.getY() + SQ_SIZE / 2);
+            
+            if(currRocks > 0){
+                
+                System.out.println("Checking if rock can be placed!");
+                
+                System.out.println("currPos = " + currPos);
+                System.out.println("bobX = " + bobX + "; bobY = " + bobY);
+                
+                if(rockCanBePlaced(currPos, bobX/SQ_SIZE, bobY/SQ_SIZE)){
+                    
+                    System.out.println("IT CAN BE PLACED!!!!");
+                    placeRock(currPos, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE);
+                    rockPlaced = true;
+                    currRocks--;
+                }
+            }
         }
 
         puerta.update(elapsedTime);
@@ -1370,6 +1405,91 @@ public class Main extends Game {
 
             resetBucketCoords();
             resetDoorCoords();
+        }
+    }
+    
+    public boolean rockCanBePlaced(char currPos, int bobXCell, int bobYCell){
+        
+        switch(currPos){
+            
+            case 'u':
+                return controlMatrix[bobYCell - 1][bobXCell] == OPEN_CELL;
+                
+            case 'd':
+                return controlMatrix[bobYCell + 1][bobXCell] == OPEN_CELL;
+                
+            case 'l':
+                return controlMatrix[bobYCell][bobXCell - 1] == OPEN_CELL;
+                
+            case 'r':
+                return controlMatrix[bobYCell][bobXCell + 1] == OPEN_CELL;
+        }
+        
+        return false;
+    }
+    
+    public void updateRocks(){
+        
+        for(Rock r : placedRocks){
+            
+            if(Math.abs(currTime - r.getInitialTime()) == ROCK_TIME){
+                
+                deleteRockImage(r.getXCell()*SQ_SIZE, r.getYCell()*SQ_SIZE);
+                r = null;
+            }   
+        }
+    }
+    
+    public void deleteRockImage(int xCoord, int yCoord){
+        
+        for(Sprite s : rocksSprites){
+            
+            System.out.println("s.getX() = " + s.getX() + "; s.getY() = " + s.getY());
+            System.out.println("xCoord = " + xCoord + "; yCoord = " + yCoord);
+            
+            if(s.getX() == xCoord && s.getY() == yCoord){
+                
+                s = null;
+            }
+        }
+    }
+    
+    public void placeRock(char currPos, int bobX, int bobY, int bobXCell, int bobYCell){
+        
+        switch(currPos){
+            
+            case 'u':
+                
+                controlMatrix[bobYCell - 1][bobXCell] = BLOCKED_CELL;
+                placedRocks.add(new Rock(currTime, bobX, bobY - 1));
+                Sprite newRock1 = new Sprite(getImage("images/" + rockName + ".png"), (bobX/SQ_SIZE)*(SQ_SIZE), ((bobY - SQ_SIZE)/SQ_SIZE)*SQ_SIZE);
+                newRock1.setBackground(fondo);
+                rocksSprites.add(newRock1);
+                break;
+                
+            case 'd':
+                controlMatrix[bobYCell + 1][bobXCell] = BLOCKED_CELL;
+                placedRocks.add(new Rock(currTime, bobX, bobY + 1));
+                Sprite newRock2 = new Sprite(getImage("images/" + rockName + ".png"), (bobX/SQ_SIZE)*(SQ_SIZE), ((bobY + SQ_SIZE)/SQ_SIZE)*SQ_SIZE);
+                newRock2.setBackground(fondo);
+                rocksSprites.add(newRock2);
+                break;
+                
+            case 'l':
+                controlMatrix[bobYCell][bobXCell - 1] = BLOCKED_CELL;
+                placedRocks.add(new Rock(currTime, bobX - 1, bobY));
+                Sprite newRock3 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX - SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
+                newRock3.setBackground(fondo);
+                rocksSprites.add(newRock3);
+                break;
+                
+            case 'r':
+                controlMatrix[bobYCell][bobXCell + 1] = BLOCKED_CELL;
+                placedRocks.add(new Rock(currTime, bobX + 1, bobY));
+                Sprite newRock4 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX + SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
+                newRock4.setBackground(fondo);
+                rocksSprites.add(newRock4);
+                break;
         }
     }
 
@@ -1396,7 +1516,7 @@ public class Main extends Game {
             } else {
 
                 agente.setStatus(0);
-                currPos = 'c';
+                //currPos = 'c';
             }
         } else if (keyDown(KeyEvent.VK_DOWN)) {
 
@@ -1412,7 +1532,7 @@ public class Main extends Game {
             } else {
 
                 agente.setStatus(0);
-                currPos = 'c';
+                //currPos = 'c';
             }
         } else if (keyDown(KeyEvent.VK_LEFT)) {
 
@@ -1428,7 +1548,7 @@ public class Main extends Game {
             } else {
 
                 agente.setStatus(0);
-                currPos = 'c';
+                //currPos = 'c';
             }
         } else if (keyDown(KeyEvent.VK_RIGHT)) {
 
@@ -1443,13 +1563,18 @@ public class Main extends Game {
             } else {
 
                 agente.setStatus(0);
-                currPos = 'c';
+                //currPos = 'c';
             }
         } else {
 
             agente.setStatus(0);
-            currPos = 'c';
+            //currPos = 'c';
         }
+    }
+    
+    public void moveCharacterMemo(long elapsedTime){
+        
+        
     }
 
     public void resetCharacter() {
@@ -1482,8 +1607,8 @@ public class Main extends Game {
         if(prevEnemyDirection == direction)
             return;
 
-        System.out.println("prevEnemyDirection = " + prevEnemyDirection);
-        System.out.println("direction = " + direction);
+        //System.out.println("prevEnemyDirection = " + prevEnemyDirection);
+        //System.out.println("direction = " + direction);
         prevEnemyDirection = direction;
 
         setEnemyCoords();
@@ -1528,7 +1653,7 @@ public class Main extends Game {
 
         moves.clear();
 
-        System.out.println("path.size() = " + path.size());
+        //System.out.println("path.size() = " + path.size());
         moves.add(closed.get(0).getCurrentDirection());
         
         for (int i = 1; i < path.size(); i++) {
@@ -1537,9 +1662,9 @@ public class Main extends Game {
             moves.add(closed.get(closedIndex).getCurrentDirection()); //Get the direction
         }
         
-        for(int c : moves){
+        /*for(int c : moves){
             System.out.println(c);
-        }
+        }*/
     }
 
     public void getPath() {
@@ -1547,13 +1672,13 @@ public class Main extends Game {
         //Take the path from the "closed" array list
         path.clear();
         
-        for(Nodo x : closed){
+        /*for(Nodo x : closed){
             System.out.println(x);
-        }
+        }*/
 
         int index = closed.size() - 1;
 
-        System.out.println("!!!!!!! index = " + index);
+        //System.out.println("!!!!!!! index = " + index);
 
         while (index >= 0) {
 
@@ -1564,10 +1689,10 @@ public class Main extends Game {
             //System.out.println("index = " + index);
         }
         
-        for(Nodo d : solutionNodes)
+        /*for(Nodo d : solutionNodes)
             System.out.println(d);
         
-        System.out.println("Getting moves!!");
+        System.out.println("Getting moves!!");*/
         getMoves();
     }
 
@@ -1589,7 +1714,7 @@ public class Main extends Game {
 
             if (!nodeIsInClosed(n)) { //Only add the node to open if it is not in "closed"
 
-                System.out.println("HEEEEERE!!!!!!!!!!!!!!!!!!");
+                //System.out.println("HEEEEERE!!!!!!!!!!!!!!!!!!");
                 open.add(n);
             }
         }
@@ -1604,15 +1729,15 @@ public class Main extends Game {
 
         while (!open.isEmpty()) {
 
-            System.out.println("open.size() = " + open.size());
+            //System.out.println("open.size() = " + open.size());
 
             Nodo x = open.poll();
 
             closed.add(x);
 
-            System.out.println("Node x =" + x);
+            //System.out.println("Node x =" + x);
             
-            System.out.println("x.getPathFound() = " + x.getPathFound());
+            //System.out.println("x.getPathFound() = " + x.getPathFound());
 
             if (x.getPathFound() == true) { //It got either a diamond or the door
                 
@@ -1622,7 +1747,7 @@ public class Main extends Game {
 
             ArrayList<Nodo> xChildren = x.computeChildren(x.getPositionX(), x.getPositionY()); //We generate the children
             changeParent(xChildren, closed.size()-1);
-            System.out.println("xChildren.size() = " + xChildren.size());
+            //System.out.println("xChildren.size() = " + xChildren.size());
             addChildrenToOpen(xChildren); //We add them to open
         }
     }
@@ -2157,7 +2282,7 @@ public class Main extends Game {
             
             for(int i = 0; i < solutionNodes.size(); i++){
                 
-                System.out.println("pmX = " + pmX + "; pmY = " + pmY);
+                //System.out.println("pmX = " + pmX + "; pmY = " + pmY);
                 
                 if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY){
                     
@@ -2181,28 +2306,29 @@ public class Main extends Game {
                 }
             }
             
-            if(finish == true){
-                System.out.println("PARA YA LLEGASTE");
+            if(finish == true || rockPlaced == true){
+                //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
                 open.clear();
                 closed.clear();
                 solutionNodes.clear();
                 getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
                 finish = false;
+                rockPlaced = false;
             }
             
             if(winningIndex == solutionNodes.size() - 1){
                 finish = true;
-                System.out.println("winningIndex = "+winningIndex);
-                System.out.println("pmX = "+pmX+"; pmY = "+pmY);
-                System.out.println("solutionNodes.get(" + winningIndex + ").getPositionX() = " + solutionNodes.get(winningIndex).getPositionX() + "; solutionNodes.get(" + winningIndex + ").getPositionY() = " + solutionNodes.get(winningIndex).getPositionY());
+                //System.out.println("winningIndex = "+winningIndex);
+                //System.out.println("pmX = "+pmX+"; pmY = "+pmY);
+                //System.out.println("solutionNodes.get(" + winningIndex + ").getPositionX() = " + solutionNodes.get(winningIndex).getPositionX() + "; solutionNodes.get(" + winningIndex + ").getPositionY() = " + solutionNodes.get(winningIndex).getPositionY());
                 
             }
             
             
             
             if(winningIndex == solutionNodes.size() - 1 && pmX == solutionNodes.get(winningIndex).getPositionX() && pmY == solutionNodes.get(winningIndex).getPositionY()){ //If it is the node in which the diamond is
-                System.out.println("PARA YA LLEGASTE");
+                //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
                 getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
             }
@@ -2223,7 +2349,7 @@ public class Main extends Game {
 
     public boolean areGoodCoords(int i, int j) {
 
-        System.out.println("i = " + i + "; j = " + j);
+        //System.out.println("i = " + i + "; j = " + j);
         return (i > 0 && i < mapHeight / SQ_SIZE - 1) && (j > 0 && j < mapWidth / SQ_SIZE - 1);
     }
 
@@ -2405,6 +2531,8 @@ public class Main extends Game {
         grupoAgente.render(g);
         grupoBucket.render(g);
         sprite3.render(g);
+        
+        renderRocks(g);
 
         grupoBala.render(g);
 
@@ -2423,6 +2551,12 @@ public class Main extends Game {
         }
 
         //g.drawString("Bullets:" + currBullets, 780, 250);
+    }
+    
+    public void renderRocks(Graphics2D g){
+        
+        for(Sprite s : rocksSprites)
+            s.render(g);
     }
 
     public void renderGame(Graphics2D g) {
