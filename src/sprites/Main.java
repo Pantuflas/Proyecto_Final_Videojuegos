@@ -180,6 +180,7 @@ public class Main extends Game {
     private int bobDirection = 0;
     private int bobMoveX = 0;
     private int bobMoveY = 0;
+    private int prevBobDirection = 0;
 
     /*
         
@@ -217,6 +218,7 @@ public class Main extends Game {
     private boolean allIsReady = false;
     
     private int MOVER2_COUNTER = 0;
+    private final int BOB_PIXEL_ERROR = SQ_SIZE/8;
 
     /*
         c = center
@@ -491,7 +493,7 @@ public class Main extends Game {
 
     public void resetBucketCoords() {
 
-        if (prevCurrTime == currTime) {
+        if(bucket == null || prevCurrTime == currTime) {
             return;
         }
 
@@ -1338,8 +1340,8 @@ public class Main extends Game {
         //System.out.println();
         if (velocidad.action(elapsedTime)) {
 
-            moveCharacter(elapsedTime);
-            //moveCharacterMemo(elapsedTime);
+            //moveCharacter(elapsedTime);
+            moveCharacterMemo(elapsedTime);
             
 
             sprite3.move(mX3, mY3);
@@ -1391,7 +1393,9 @@ public class Main extends Game {
        
         if(colisionadorAB.getCollision()){ //Agent - bucket collision
             
+            System.out.println("I'm in!!!!!!!!!!");
             currRocks = INITIAL_ROCKS;
+            bucket = null;
         }
         
         System.out.println("currRocks = " + currRocks);
@@ -1402,17 +1406,17 @@ public class Main extends Game {
             
             //shoot(agente.getX() + SQ_SIZE / 2, agente.getY() + SQ_SIZE / 2);
             
-            if(currRocks > 0){
+            if(currRocks > 0){ //If you still have rocks to place
                 
                 System.out.println("Checking if rock can be placed!");
                 
                 System.out.println("currPos = " + currPos);
                 System.out.println("bobX = " + bobX + "; bobY = " + bobY);
                 
-                if(rockCanBePlaced(currPos, bobX/SQ_SIZE, bobY/SQ_SIZE)){
+                if(rockCanBePlaced()){
                     
                     System.out.println("IT CAN BE PLACED!!!!");
-                    placeRock(currPos, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE);
+                    placeRock(/*, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE*/);
                     rockPlaced = true;
                     currRocks--;
                 }
@@ -1424,26 +1428,28 @@ public class Main extends Game {
         currTime++;
 
         if (currTime % DOOR_TIME_FACTOR == 0) {
-
+            
             resetBucketCoords();
             resetDoorCoords();
         }
     }
     
-    public boolean rockCanBePlaced(char currPos, int bobXCell, int bobYCell){
+    public boolean rockCanBePlaced(){
         
-        switch(currPos){
+        System.out.println("bobXCell = "+bobXCell+"   bobYCell = "+bobYCell+ "   Direction = "+prevBobDirection);
+        
+        switch(prevBobDirection){
             
-            case 'u':
+            case 1:
                 return controlMatrix[bobYCell - 1][bobXCell] == OPEN_CELL;
                 
-            case 'd':
+            case 3:
                 return controlMatrix[bobYCell + 1][bobXCell] == OPEN_CELL;
                 
-            case 'l':
+            case 4:
                 return controlMatrix[bobYCell][bobXCell - 1] == OPEN_CELL;
                 
-            case 'r':
+            case 2:
                 return controlMatrix[bobYCell][bobXCell + 1] == OPEN_CELL;
         }
         
@@ -1476,11 +1482,11 @@ public class Main extends Game {
         }
     }
     
-    public void placeRock(char currPos, int bobX, int bobY, int bobXCell, int bobYCell){
+    public void placeRock(/*, int bobX, int bobY, int bobXCell, int bobYCell*/){
         
-        switch(currPos){
+        switch(prevBobDirection){
             
-            case 'u':
+            case 1:
                 
                 controlMatrix[bobYCell - 1][bobXCell] = BLOCKED_CELL;
                 placedRocks.add(new Rock(currTime, bobX, bobY - 1));
@@ -1489,7 +1495,7 @@ public class Main extends Game {
                 rocksSprites.add(newRock1);
                 break;
                 
-            case 'd':
+            case 3:
                 controlMatrix[bobYCell + 1][bobXCell] = BLOCKED_CELL;
                 placedRocks.add(new Rock(currTime, bobX, bobY + 1));
                 Sprite newRock2 = new Sprite(getImage("images/" + rockName + ".png"), (bobX/SQ_SIZE)*(SQ_SIZE), ((bobY + SQ_SIZE)/SQ_SIZE)*SQ_SIZE);
@@ -1497,7 +1503,7 @@ public class Main extends Game {
                 rocksSprites.add(newRock2);
                 break;
                 
-            case 'l':
+            case 4:
                 controlMatrix[bobYCell][bobXCell - 1] = BLOCKED_CELL;
                 placedRocks.add(new Rock(currTime, bobX - 1, bobY));
                 Sprite newRock3 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX - SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
@@ -1505,7 +1511,7 @@ public class Main extends Game {
                 rocksSprites.add(newRock3);
                 break;
                 
-            case 'r':
+            case 2:
                 controlMatrix[bobYCell][bobXCell + 1] = BLOCKED_CELL;
                 placedRocks.add(new Rock(currTime, bobX + 1, bobY));
                 Sprite newRock4 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX + SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
@@ -1595,6 +1601,7 @@ public class Main extends Game {
     }
     
     public void moveCharacterMemo(long elapsedTime){
+        
         bobX = (int)agente.getX();
         bobY = (int)agente.getY();
         bobXCell = bobX/SQ_SIZE;
@@ -1604,19 +1611,29 @@ public class Main extends Game {
         
         if(keyDown(KeyEvent.VK_D)){
             bobDirection = 2;
+            prevBobDirection = bobDirection;
         }
-        if(keyDown(KeyEvent.VK_A)){
+        else if(keyDown(KeyEvent.VK_A)){
             bobDirection = 4;
+            prevBobDirection = bobDirection;
         }
-        if(keyDown(KeyEvent.VK_W)){
+        else if(keyDown(KeyEvent.VK_W)){
             bobDirection = 1;
+            prevBobDirection = bobDirection;
         }
-        if(keyDown(KeyEvent.VK_S)){
+        else if(keyDown(KeyEvent.VK_S)){
             bobDirection = 3;
+            prevBobDirection = bobDirection;
         }
+
         
-        if(bobXAux == SQ_SIZE/2){
+        if(bobXAux >= SQ_SIZE/2 - BOB_PIXEL_ERROR && bobXAux <= SQ_SIZE/2 + BOB_PIXEL_ERROR && bobYAux >= SQ_SIZE/2 - BOB_PIXEL_ERROR && bobYAux <= SQ_SIZE/2 + BOB_PIXEL_ERROR){
+            
             switch(bobDirection){
+                case 0:
+                    bobMoveY = 0;
+                    bobMoveX = 0;
+                    break;
                 case 1:
                     if(controlMatrix[bobYCell - 1][bobXCell] != BLOCKED_CELL){
                         bobMoveY = -1;
@@ -1663,8 +1680,8 @@ public class Main extends Game {
                     break;
             }
         }
+        
         agente.move(bobMoveX, bobMoveY);
- 
     }
 
     public void resetCharacter() {

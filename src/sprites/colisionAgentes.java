@@ -35,6 +35,13 @@ public class colisionAgentes extends BasicCollisionGroup  {
     //en esta funcion se declara que se va a hacer si se detecta una colision
     //en tres los agente1 y agente2, que ya entran como sprites
        //agente1.setX(agente1.getOldX()-3);
+       
+       if(agente1 == null || agente2 == null){
+            
+            collision = false;
+            return;
+       }
+       
        agente1.setActive(true);
        agente2.setActive(false);
        
