@@ -189,9 +189,12 @@ public class Main extends Game {
     ArrayList<Nodo> closed; //For the A* algorithm
     ArrayList<Integer> path; //Stores the tree path of nodes to get to a position
     ArrayList<Integer> moves; //Stores the required directions to get to a position
+    ArrayList<Nodo> solutionNodes;
 
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     private boolean allIsReady = false;
+    
+    private int MOVER2_COUNTER = 0;
 
     /*
         c = center
@@ -251,11 +254,12 @@ public class Main extends Game {
     }
 
     public void resetLevel() {
-
+        
         path = new ArrayList<Integer>();
         moves = new ArrayList<Integer>();
         open = new PriorityQueue<Nodo>();
         closed = new ArrayList<Nodo>();
+        solutionNodes = new ArrayList<Nodo>();
 
         fondo = new ImageBackground(map);
         fondo.setClip(0, 0, CLIP_WIDTH, CLIP_HEIGHT);     // CLIP_WIDTH = 960, CLIP_HEIGHT = 480                 
@@ -386,7 +390,7 @@ public class Main extends Game {
 
         allIsReady = true;
         
-        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false);
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
         getMovementsR2(startingNode);
     }
 
@@ -1306,12 +1310,17 @@ public class Main extends Game {
             pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
             moveR2();
         }*/
+        
         enemyCoordX = (int)sprite3.getX();
         enemyCoordY = (int)sprite3.getY();
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; 
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
-        if(moves.size() != 0)
+        
+        if(moves.size() != 0){
+         
             moveR2();
+        }
+        
         fondo.setToCenter(agente);
         fondo.update(elapsedTime);
         grupoAgente.update(elapsedTime);
@@ -1461,9 +1470,8 @@ public class Main extends Game {
 
     public void changeAnimation(int character, int direction) {
 
-        if (prevEnemyDirection == direction) {
+        if(prevEnemyDirection == direction)
             return;
-        }
 
         System.out.println("prevEnemyDirection = " + prevEnemyDirection);
         System.out.println("direction = " + direction);
@@ -1513,11 +1521,13 @@ public class Main extends Game {
 
         System.out.println("path.size() = " + path.size());
         moves.add(closed.get(0).getCurrentDirection());
+        
         for (int i = 1; i < path.size(); i++) {
 
             int closedIndex = path.get(i); //Get the index of the child in the closed array
             moves.add(closed.get(closedIndex).getCurrentDirection()); //Get the direction
         }
+        
         for(int c : moves){
             System.out.println(c);
         }
@@ -1539,14 +1549,15 @@ public class Main extends Game {
         while (index >= 0) {
 
             path.add(0, closed.get(index).getParentIndex());
-            
-
+            solutionNodes.add(0, closed.get(index));
             index = closed.get(index).getParentIndex();
-
+            
             //System.out.println("index = " + index);
         }
-        for(int c : path)
-                System.out.println(c);
+        
+        for(Nodo d : solutionNodes)
+            System.out.println(d);
+        
         System.out.println("Getting moves!!");
         getMoves();
     }
@@ -1601,9 +1612,15 @@ public class Main extends Game {
             }
 
             ArrayList<Nodo> xChildren = x.computeChildren(x.getPositionX(), x.getPositionY()); //We generate the children
+            changeParent(xChildren, closed.size()-1);
             System.out.println("xChildren.size() = " + xChildren.size());
             addChildrenToOpen(xChildren); //We add them to open
         }
+    }
+    
+    public void changeParent(ArrayList<Nodo> xChildren, int index){
+        for(Nodo n : xChildren)
+            n.setParentIndex(index);
     }
 
     public void randomMoveR2(long elapsedTime) {
@@ -2080,58 +2097,88 @@ public class Main extends Game {
     }
 
     public void setMoveDirection(int direction) {
+        
         switch (direction) {
+            
             case 1:
                 mX3 = 0;
                 mY3 = -1;
                 direc3 = 1;
                 break;
+            
             case 2:
                 mX3 = 1;
                 mY3 = 0;
                 direc3 = 2;
                 break;
+            
             case 3:
                 mX3 = 0;
                 mY3 = 1;
                 direc3 = 3;
                 break;
+            
             case 4:
                 mX3 = -1;
                 mY3 = 0;
                 direc3 = 4;
                 break;
         }
+        
         changeAnimation(1, direc3);
     }
 
     public void moveR2(/*long elapsedTime*/) {
 
-        pmX = (enemyCoordX + SQ_SIZE / 2) / SQ_SIZE;
-        pmY = (enemyCoordY + SQ_SIZE / 2) / SQ_SIZE;
-
-        
-
-
+        pmX = (enemyCoordX + SQ_SIZE / 2) / SQ_SIZE; //Position in x
+        pmY = (enemyCoordY + SQ_SIZE / 2) / SQ_SIZE; //Position in y
 
         auxmX = enemyCoordX - SQ_SIZE * pmX + SQ_SIZE / 2; //X position in cell
         auxmY = enemyCoordY - SQ_SIZE * pmY + SQ_SIZE / 2; //Y Position in cell
 
-        if (auxmX < 0) {
+        if(auxmX < 0)
             auxmX *= -1;
-        }
 
-        if (auxmY < 0) {
+        if(auxmY < 0)
             auxmY *= -1;
-        }
         
-        if (auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2) {
-            for(int i = 0; i<closed.size(); i++){
+        if(auxmX == SQ_SIZE / 2 && auxmY == SQ_SIZE / 2){
+            
+            /*for(int i = 0; i < closed.size(); i++){
+                
+                System.out.println("pmX = " + pmX + "; pmY = " + pmY);
+                System.out.println("closed.get(" + i + ").getPositionX() = " + closed.get(i).getPositionX() + "; closed.get(" + i + ").getPositionY() = " + closed.get(i).getPositionY());
+                
                 if(closed.get(i).getPositionX() == pmX && closed.get(i).getPositionY() == pmY){
+                    
+                    MOVER2_COUNTER++;
+                    System.out.println("MOVER2_COUNTER = " + MOVER2_COUNTER);
                     setMoveDirection(closed.get(i).getCurrentDirection());
                     System.out.println("HOLA YA CAMBIE LA DIRECCION "+mX3+"    "+mY3+"    POS"+pmX+"     "+pmY);
-                    System.out.println("POS DE NODO "+closed.get(i).getPositionX()+"    "+closed.get(i).getPositionY());
+                    System.out.println("POS DE NODO " + closed.get(i).getPositionX() + "    " + closed.get(i).getPositionY());
                     break;
+                }
+            }*/
+            
+            for(int i = 0; i < solutionNodes.size(); i++){
+                
+                System.out.println("pmX = " + pmX + "; pmY = " + pmY);
+                
+                if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY){
+                    
+                    setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }
+                if(solutionNodes.get(i).getPositionX() == (pmX-1) && solutionNodes.get(i).getPositionY() == pmY){
+                    
+                    setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }
+                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY-1)){
+                    
+                    setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }
+                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY+1)){
+                    
+                    setMoveDirection(solutionNodes.get(i).getCurrentDirection());
                 }
             }
         }
@@ -2145,8 +2192,6 @@ public class Main extends Game {
                 currentDecisionIndex++;
             }
         }*/
-        
-        
     }
 
     public boolean areGoodCoords(int i, int j) {
@@ -2314,6 +2359,7 @@ public class Main extends Game {
                     break; 
             }
         }*/
+        
         grupoPuerta.render(g);
         grupoAgente.render(g);
         grupoBucket.render(g);
