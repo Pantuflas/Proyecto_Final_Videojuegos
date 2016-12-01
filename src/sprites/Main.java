@@ -164,8 +164,13 @@ public class Main extends Game {
     ;
     private final int ENEMY_STARTPOS_X = 15 * SQ_SIZE; //11*/ //480
     private final int ENEMY_STARTPOS_Y = 1 * SQ_SIZE;
+    
+    private final int INITIAL_DOOR_X_CELL = 8;
+    private final int INITIAL_DOOR_Y_CELL = 12;
+    
     /*96*/ //32
-
+    private final int INITIAL_BUCKET_X_CELL = 15;
+    private final int INITIAL_BUCKET_Y_CELL = 11;
     private int bobX = -1;
     private int bobY = -1;
 
@@ -317,21 +322,29 @@ public class Main extends Game {
         agente.obtenerBsLoader(bsLoader);
 
         //sideBar.setBackground(fondo);
+        
         puerta = new Agente("2");
+        doorX = INITIAL_DOOR_X_CELL;
+        doorY = INITIAL_DOOR_Y_CELL;
+        puerta.setX(SQ_SIZE * doorX);
+        puerta.setY(SQ_SIZE * doorY);
         puerta.setImages(bsLoader.getStoredImages("2_0"));
         puerta.setDirection(0);
         puerta.setBackground(fondo);
         puerta.obtenerBsLoader(bsLoader);
-
         resetDoorCoords();
-
+        
         bucket = new Agente("3");
+        bucketX = INITIAL_BUCKET_X_CELL;
+        bucketY = INITIAL_BUCKET_Y_CELL;
+        bucket.setX(SQ_SIZE*bucketX);
+        bucket.setY(SQ_SIZE*bucketY);
         bucket.setImages(bsLoader.getStoredImages("3_0"));
         bucket.setDirection(0);
         bucket.setBackground(fondo);
         bucket.obtenerBsLoader(bsLoader);
-
         resetBucketCoords();
+        
 
         ////////////////////////////////////////////////////////////
         mapHeight = map.getHeight();
@@ -453,11 +466,14 @@ public class Main extends Game {
 
                         puerta.setX(SQ_SIZE * doorX);
                         puerta.setY(SQ_SIZE * doorY);
-
+                                                
                         //System.out.println("doorX = " + doorX + "; doorY = " + doorY);
                         
                         addDoorToControlMatrix();
-                        controlMatrix[auxDoorY][auxDoorX] = OPEN_CELL; //Delete the previous door coords
+                        
+                        if(auxDoorY > 0 && auxDoorX > 0)
+                            controlMatrix[auxDoorY][auxDoorX] = OPEN_CELL; //Delete the previous door coords
+                        
                         return;
                     }
 
@@ -1316,9 +1332,9 @@ public class Main extends Game {
         //System.out.println();
         if (velocidad.action(elapsedTime)) {
 
-            //moveCharacter(elapsedTime);
-            moveCharacterMemo(elapsedTime);
-            //moveEnemies(elapsedTime); 
+            moveCharacter(elapsedTime);
+            //moveCharacterMemo(elapsedTime);
+            
 
             sprite3.move(mX3, mY3);
             displayControlMatrix();
