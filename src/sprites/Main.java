@@ -159,7 +159,7 @@ public class Main extends Game {
     /*32*//*SQ_SIZE + SQ_SIZE/2*/
     ;
     private final int ENEMY_STARTPOS_X = 15 * SQ_SIZE; //11*/ //480
-    private final int ENEMY_STARTPOS_Y = 15 * SQ_SIZE;
+    private final int ENEMY_STARTPOS_Y = 1 * SQ_SIZE;
     /*96*/ //32
 
     private int bobX = -1;
@@ -400,6 +400,10 @@ public class Main extends Game {
 
         /*if(currTime%DOOR_TIME_FACTOR != 0)
             return;*/
+        
+        int auxDoorX = doorX;
+        int auxDoorY = doorY;
+        
         if (prevCurrTime == currTime) {
             return;
         }
@@ -439,7 +443,9 @@ public class Main extends Game {
                         puerta.setY(SQ_SIZE * doorY);
 
                         System.out.println("doorX = " + doorX + "; doorY = " + doorY);
-
+                        
+                        addDoorToControlMatrix();
+                        controlMatrix[auxDoorY][auxDoorX] = OPEN_CELL; //Delete the previous door coords
                         return;
                     }
 
@@ -447,8 +453,6 @@ public class Main extends Game {
                 }
             }
         }
-
-        addDoorToControlMatrix();
     }
 
     public void resetBucketCoords() {
@@ -1025,6 +1029,7 @@ public class Main extends Game {
         //System.out.println("bobX = " + bobX + "; bobY = " + bobY);
         //System.out.println("bobX/SQ_SIZE = " + bobX/SQ_SIZE + "; bobY/SQ_SIZE = " + bobY/SQ_SIZE);
         //System.out.println("controlMatrix[" + bobY/SQ_SIZE + "][" + bobX/SQ_SIZE + "] = " + controlMatrix[bobY/SQ_SIZE][bobX/SQ_SIZE]);
+        
         switch (lives) {
 
             case 3:
@@ -1303,6 +1308,7 @@ public class Main extends Game {
             //moveEnemies(elapsedTime); 
 
             sprite3.move(mX3, mY3);
+            displayControlMatrix();
         }
 
         /*if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
