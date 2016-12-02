@@ -71,8 +71,8 @@ public class Nodo implements Comparable<Nodo>{
         
         else{
             
-            mapHeight = 23;
-            mapWidth = 19;
+            mapHeight = 19;
+            mapWidth = 23; //Estaba igual a 19
         }
         
         getClosestDiamondCells();
@@ -112,7 +112,7 @@ public class Nodo implements Comparable<Nodo>{
             for(int j = 0; j < mapWidth; j++){
                 
                 if(matrix[i][j] == DIAMOND){
-                    
+                   System.out.println("ENCONTRE DIAMANTE");
                    int dist = computeManhDist(i, j, positionY, positionX);
                    
                    if(dist < minManhDist){

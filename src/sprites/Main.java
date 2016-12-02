@@ -168,7 +168,9 @@ public class Main extends Game {
     private final int INITIAL_DOOR_X_CELL = 8;
     private final int INITIAL_DOOR_Y_CELL = 12;
     
-    private final int TREE_HEIGHT_LIMIT = 30;
+    private final int HEIGHT_LEVEL_ONE = 30;
+    private final int HEIGHT_LEVEL_TWO = 45;
+    private int TREE_HEIGHT_LIMIT = -1;
     
     /*96*/ //32
     private final int INITIAL_BUCKET_X_CELL = 15;
@@ -281,6 +283,12 @@ public class Main extends Game {
     }
 
     public void resetLevel() {
+        
+        if(currLevel <= 3)
+            TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_ONE;
+        
+        else
+            TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_TWO;
         
         path = new ArrayList<Integer>();
         moves = new ArrayList<Integer>();
@@ -1326,6 +1334,14 @@ public class Main extends Game {
             }
         }
     }
+    
+    public void deleteInteligent(){
+        solutionNodes.clear();
+        open.clear();
+        closed.clear();
+        path.clear();
+        moves.clear();
+    }
 
     public void updateGameWithObjects(long elapsedTime) {
 
@@ -1362,7 +1378,7 @@ public class Main extends Game {
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; 
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
         
-        if(moves.size() != 0){
+        if(solutionNodes.size() != 0){
          
             moveR2();
         }
@@ -1378,13 +1394,14 @@ public class Main extends Game {
         updateCoins(elapsedTime);
 
         //colisionadorBM.checkCollision(); //Create map through object
-        if (pickedCoins1 == TOT_COINS) {
+        if (pickedCoins1 == TOT_COINS) { //If the player has already picked all the diamonds
+            
             colisionadorAP.checkCollision();
         }
 
         //System.out.println("pickedCoins = " + pickedCoins);
         if (colisionadorAP.getCollision()) { //The player got to the door, level up!
-
+            deleteInteligent();
             currLevel++;
             currMap++;
             map = getImage(mapNames[currMap] + ".png");
@@ -2429,7 +2446,7 @@ public class Main extends Game {
                 }
             }
             
-            if(finish == true || rockPlaced == true || rockDeleted == true){
+            if(finish == true || rockPlaced == true){
                 //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
                 open.clear();
