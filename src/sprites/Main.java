@@ -168,6 +168,8 @@ public class Main extends Game {
     private final int INITIAL_DOOR_X_CELL = 8;
     private final int INITIAL_DOOR_Y_CELL = 12;
     
+    private final int TREE_HEIGHT_LIMIT = 30;
+    
     /*96*/ //32
     private final int INITIAL_BUCKET_X_CELL = 15;
     private final int INITIAL_BUCKET_Y_CELL = 11;
@@ -197,6 +199,7 @@ public class Main extends Game {
     
     private boolean finish = false;
     private boolean rockPlaced = false;
+    private boolean rockDeleted = false;
     
     private int enemyCoordX = ENEMY_STARTPOS_X;
     private int enemyCoordY = ENEMY_STARTPOS_Y;
@@ -212,7 +215,6 @@ public class Main extends Game {
     ArrayList<Nodo> solutionNodes;
     
     ArrayList<Rock> placedRocks;
-    ArrayList<Sprite> rocksSprites;
 
     private boolean[] levelStarted = {false, false, false, false, false, false, false};
     private boolean allIsReady = false;
@@ -286,7 +288,6 @@ public class Main extends Game {
         closed = new ArrayList<Nodo>();
         solutionNodes = new ArrayList<Nodo>();
         placedRocks = new ArrayList<Rock>();
-        rocksSprites = new ArrayList<Sprite>(); //Where the rocks' images are stored!
 
         fondo = new ImageBackground(map);
         fondo.setClip(0, 0, CLIP_WIDTH, CLIP_HEIGHT);     // CLIP_WIDTH = 960, CLIP_HEIGHT = 480                 
@@ -380,7 +381,7 @@ public class Main extends Game {
 
         System.out.println();
 
-        displayControlMatrix();
+        //displayControlMatrix();
 
         ////////////////////////////////////////////////////////
         currPos = 'c';
@@ -859,13 +860,13 @@ public class Main extends Game {
 
         int w = map.getWidth();
         int h = map.getHeight();
-        System.out.println("width, height: " + w + ", " + h);
+        //System.out.println("width, height: " + w + ", " + h);
 
         for (int i = SQ_SIZE / 2; i < h; i += SQ_SIZE) {
 
             for (int j = SQ_SIZE / 2; j < w; j += SQ_SIZE) {
 
-                System.out.println("x,y: " + j + ", " + i);
+                //System.out.println("x,y: " + j + ", " + i);
                 int pixel = map.getRGB(j, i);
                 printPixelARGB(pixel, i, j);
                 //System.out.println("");
@@ -899,11 +900,11 @@ public class Main extends Game {
         int red = (pixel >> 16) & 0xff;
         int green = (pixel >> 8) & 0xff;
         int blue = (pixel) & 0xff;
-        System.out.println("argb: " + alpha + ", " + red + ", " + green + ", " + blue);
+        //System.out.println("argb: " + alpha + ", " + red + ", " + green + ", " + blue);
 
         if (j / SQ_SIZE < map.getWidth()) {
 
-            System.out.println("i = " + i + "; j = " + j);
+            //System.out.println("i = " + i + "; j = " + j);
 
             if (isGreenCell(red, green, blue)) {
                 controlMatrix[i / SQ_SIZE][j / SQ_SIZE] = OPEN_CELL;
@@ -921,7 +922,7 @@ public class Main extends Game {
             currTime = System.nanoTime() / TIME_FACTOR - startTime;
         }
 
-        System.out.println("currTime = " + currTime);
+        //System.out.println("currTime = " + currTime);
 
         //if(currTime >= 100)
         //currLevel = 6;
@@ -934,7 +935,7 @@ public class Main extends Game {
             currLevel = 6;
         }
 
-        System.out.println("currLevel = " + currLevel);
+        //System.out.println("currLevel = " + currLevel);
 
         switch (currLevel) {
 
@@ -1398,9 +1399,9 @@ public class Main extends Game {
             bucket = null;
         }
         
-        System.out.println("currRocks = " + currRocks);
+        //System.out.println("currRocks = " + currRocks);
         
-        updateRocks();
+        updateRocks(elapsedTime);
 
         if (keyPressed(KeyEvent.VK_SPACE)) {
             
@@ -1408,14 +1409,14 @@ public class Main extends Game {
             
             if(currRocks > 0){ //If you still have rocks to place
                 
-                System.out.println("Checking if rock can be placed!");
+                //System.out.println("Checking if rock can be placed!");
                 
-                System.out.println("currPos = " + currPos);
-                System.out.println("bobX = " + bobX + "; bobY = " + bobY);
+                //System.out.println("currPos = " + currPos);
+                //System.out.println("bobX = " + bobX + "; bobY = " + bobY);
                 
                 if(rockCanBePlaced()){
                     
-                    System.out.println("IT CAN BE PLACED!!!!");
+                    //System.out.println("IT CAN BE PLACED!!!!");
                     placeRock(/*, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE*/);
                     rockPlaced = true;
                     currRocks--;
@@ -1456,67 +1457,82 @@ public class Main extends Game {
         return false;
     }
     
-    public void updateRocks(){
+    public void updateRocks(long elapsedTime){
         
-        for(Rock r : placedRocks){
+        ArrayList<Integer> toRemove = new ArrayList<Integer>(); //Indices of sprites to remove
+        
+        for(int i = 0; i < placedRocks.size(); i++){
             
-            if(Math.abs(currTime - r.getInitialTime()) == ROCK_TIME){
+            Rock r = placedRocks.get(i);
+            
+            //System.out.println("currTime = " + currTime);
+            //System.out.println("r.getInitialTime() = " + r.getInitialTime());
+            
+            if(Math.abs(currTime - r.getInitialTime()) >= ROCK_TIME){
+               
+               System.out.println("r.getXCell()/SQ_SIZE = " + r.getXCell()/SQ_SIZE + "; r.getYCell()/SQ_SIZE = " + r.getYCell()/SQ_SIZE);
+               deleteRockCoords(r.getXCell()/SQ_SIZE, r.getYCell()/SQ_SIZE);
+               r.setRockSprite(null);
+               rockDeleted = true;
+               //toRemove.add(i);
+            }
+            
+            else{
                 
-                deleteRockImage(r.getXCell()*SQ_SIZE, r.getYCell()*SQ_SIZE);
-                r = null;
-            }   
+                r.update(elapsedTime);
+            }
+                
+        }
+        
+        for(int j = 0; j < toRemove.size(); j++){
+            
+            //System.out.println("removing rock!!");
+            placedRocks.remove(toRemove.get(j));
         }
     }
     
-    public void deleteRockImage(int xCoord, int yCoord){
+    public void deleteRockCoords(int xCell, int yCell){
         
-        for(Sprite s : rocksSprites){
-            
-            System.out.println("s.getX() = " + s.getX() + "; s.getY() = " + s.getY());
-            System.out.println("xCoord = " + xCoord + "; yCoord = " + yCoord);
-            
-            if(s.getX() == xCoord && s.getY() == yCoord){
-                
-                s = null;
-            }
-        }
+        controlMatrix[yCell][xCell] = OPEN_CELL;
     }
     
     public void placeRock(/*, int bobX, int bobY, int bobXCell, int bobYCell*/){
+        
+        System.out.println("bobX = " + bobX + "; bobY = " + bobY);
         
         switch(prevBobDirection){
             
             case 1:
                 
                 controlMatrix[bobYCell - 1][bobXCell] = BLOCKED_CELL;
-                placedRocks.add(new Rock(currTime, bobX, bobY - 1));
-                Sprite newRock1 = new Sprite(getImage("images/" + rockName + ".png"), (bobX/SQ_SIZE)*(SQ_SIZE), ((bobY - SQ_SIZE)/SQ_SIZE)*SQ_SIZE);
+                Sprite newRock1 = new Sprite(getImage("images/" + rockName + ".png"), bobXCell*SQ_SIZE, (bobYCell - 1)*SQ_SIZE);
                 newRock1.setBackground(fondo);
-                rocksSprites.add(newRock1);
+                placedRocks.add(new Rock(currTime, bobXCell * SQ_SIZE, (bobYCell - 1)* SQ_SIZE, newRock1));
+                //rocksSprites.add(newRock1);
                 break;
                 
             case 3:
                 controlMatrix[bobYCell + 1][bobXCell] = BLOCKED_CELL;
-                placedRocks.add(new Rock(currTime, bobX, bobY + 1));
-                Sprite newRock2 = new Sprite(getImage("images/" + rockName + ".png"), (bobX/SQ_SIZE)*(SQ_SIZE), ((bobY + SQ_SIZE)/SQ_SIZE)*SQ_SIZE);
+                Sprite newRock2 = new Sprite(getImage("images/" + rockName + ".png"), bobXCell*SQ_SIZE, (bobYCell + 1)*SQ_SIZE);
                 newRock2.setBackground(fondo);
-                rocksSprites.add(newRock2);
+                placedRocks.add(new Rock(currTime, bobXCell * SQ_SIZE, (bobYCell + 1)* SQ_SIZE, newRock2));
+                //rocksSprites.add(newRock2);
                 break;
                 
             case 4:
                 controlMatrix[bobYCell][bobXCell - 1] = BLOCKED_CELL;
-                placedRocks.add(new Rock(currTime, bobX - 1, bobY));
-                Sprite newRock3 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX - SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
+                Sprite newRock3 = new Sprite(getImage("images/" + rockName + ".png"), (bobXCell - 1)*SQ_SIZE, bobYCell*SQ_SIZE);
                 newRock3.setBackground(fondo);
-                rocksSprites.add(newRock3);
+                placedRocks.add(new Rock(currTime, (bobXCell - 1)* SQ_SIZE, bobYCell * SQ_SIZE, newRock3));
+                //rocksSprites.add(newRock3);
                 break;
                 
             case 2:
                 controlMatrix[bobYCell][bobXCell + 1] = BLOCKED_CELL;
-                placedRocks.add(new Rock(currTime, bobX + 1, bobY));
-                Sprite newRock4 = new Sprite(getImage("images/" + rockName + ".png"), ((bobX + SQ_SIZE)/SQ_SIZE)*SQ_SIZE, (bobY/SQ_SIZE)*SQ_SIZE);
+                Sprite newRock4 = new Sprite(getImage("images/" + rockName + ".png"), (bobXCell + 1)*SQ_SIZE, bobYCell*SQ_SIZE);
                 newRock4.setBackground(fondo);
-                rocksSprites.add(newRock4);
+                placedRocks.add(new Rock(currTime, (bobXCell + 1)* SQ_SIZE, bobYCell * SQ_SIZE, newRock4));
+                //rocksSprites.add(newRock4);
                 break;
         }
     }
@@ -1828,7 +1844,7 @@ public class Main extends Game {
     }
 
     public void getMovementsR2(Nodo startingNode) {
-
+        
         open.clear();
         closed.clear();
 
@@ -1846,7 +1862,7 @@ public class Main extends Game {
             
             //System.out.println("x.getPathFound() = " + x.getPathFound());
 
-            if (x.getPathFound() == true) { //It got either a diamond or the door
+            if (x.getG() >= TREE_HEIGHT_LIMIT || x.getPathFound() == true) { //It got either a diamond or the door
                 
                 getPath();
                 return;
@@ -2413,7 +2429,7 @@ public class Main extends Game {
                 }
             }
             
-            if(finish == true || rockPlaced == true){
+            if(finish == true || rockPlaced == true || rockDeleted == true){
                 //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
                 open.clear();
@@ -2422,6 +2438,7 @@ public class Main extends Game {
                 getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
                 finish = false;
                 rockPlaced = false;
+                rockDeleted = false;
             }
             
             if(winningIndex == solutionNodes.size() - 1){
@@ -2433,11 +2450,12 @@ public class Main extends Game {
             }
             
             
-            
-            if(winningIndex == solutionNodes.size() - 1 && pmX == solutionNodes.get(winningIndex).getPositionX() && pmY == solutionNodes.get(winningIndex).getPositionY()){ //If it is the node in which the diamond is
-                //System.out.println("PARA YA LLEGASTE");
-                stopEnemy();
-                getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+            if(solutionNodes.size() > 0){
+                if(winningIndex == solutionNodes.size() - 1 && pmX == solutionNodes.get(winningIndex).getPositionX() && pmY == solutionNodes.get(winningIndex).getPositionY()){ //If it is the node in which the diamond is
+                    //System.out.println("PARA YA LLEGASTE");
+                    stopEnemy();
+                    getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+                }
             }
         }
         
@@ -2662,8 +2680,8 @@ public class Main extends Game {
     
     public void renderRocks(Graphics2D g){
         
-        for(Sprite s : rocksSprites)
-            s.render(g);
+        for(Rock r : placedRocks)
+            r.render(g);
     }
 
     public void renderGame(Graphics2D g) {

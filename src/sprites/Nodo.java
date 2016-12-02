@@ -61,6 +61,7 @@ public class Nodo implements Comparable<Nodo>{
         System.out.println("X: "+positionX+"         Y:"+positionY);
         System.out.println("Parent index: "+parentIndex);
         System.out.println("CurrentDirection: "+currentDirection);
+        System.out.println("Height: "+g);
         
         if(level <= 3){
             
@@ -175,25 +176,27 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public void validMove(int posX, int posY){
-            if(matrix[positionY - 1][positionX] != BLOCKED_CELL && lastDirection != 1)
-                up = true;
-            else
-                up = false;
-            
-            if(matrix[positionY + 1][positionX ] != BLOCKED_CELL && lastDirection != 3)
-                down = true;
-            else
-                down = false;
-            
-            if(matrix[positionY][positionX  + 1] != BLOCKED_CELL && lastDirection != 2)
-                right = true;
-            else
-                right = false;
-            
-            if(matrix[positionY][positionX - 1] != BLOCKED_CELL && lastDirection != 4)
-                left = true;
-            else
-                left = false;
+        try{  
+                if(matrix[positionY - 1][positionX] != BLOCKED_CELL && lastDirection != 1)
+                    up = true;
+                else
+                    up = false;
+
+                if(matrix[positionY + 1][positionX ] != BLOCKED_CELL && lastDirection != 3)
+                    down = true;
+                else
+                    down = false;
+
+                if(matrix[positionY][positionX  + 1] != BLOCKED_CELL && lastDirection != 2)
+                    right = true;
+                else
+                    right = false;
+
+                if(matrix[positionY][positionX - 1] != BLOCKED_CELL && lastDirection != 4)
+                    left = true;
+                else
+                    left = false;
+        }catch(ArrayIndexOutOfBoundsException aiobe){}
     }
     
     public boolean isDoorOrDiamond(int posX, int posY){
