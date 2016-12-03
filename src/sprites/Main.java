@@ -226,6 +226,11 @@ public class Main extends Game {
     
     private int MOVER2_COUNTER = 0;
     private final int BOB_PIXEL_ERROR = SQ_SIZE/8;
+    
+    private long prevBlockedEnemyTime = 0;
+    private int prevPmX;
+    private int prevPmY;
+    private final long BLOCKED_ENEMY_TIME_CONSTANT = 1000000000;
 
     /*
         c = center
@@ -322,6 +327,8 @@ public class Main extends Game {
         stopEnemy();
         pmX = enemyCoordX / SQ_SIZE;
         pmY = enemyCoordY / SQ_SIZE;
+        prevPmX = pmX;
+        prevPmX = pmY;
         sprite3.move(mX3, mY3);
         sprite3.setAnimate(true);
         sprite3.setLoopAnim(true);
@@ -1385,6 +1392,15 @@ public class Main extends Game {
 
             sprite3.move(mX3, mY3);
         }
+        
+        if(enemyIsBlocked()){
+            
+            System.out.println("ENEMY IS BLOCKED!!!!!");
+            stopEnemy();
+            deleteIntelligence();
+            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+            getMovementsR2(startingNode);  
+        }
 
         /*if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
 
@@ -1396,6 +1412,7 @@ public class Main extends Game {
         
         enemyCoordX = (int)sprite3.getX();
         enemyCoordY = (int)sprite3.getY();
+
         pmX = (enemyCoordX + SQ_SIZE/2)/SQ_SIZE; 
         pmY = (enemyCoordY + SQ_SIZE/2)/SQ_SIZE; 
         
@@ -1686,10 +1703,11 @@ public class Main extends Game {
         else if(keyDown(KeyEvent.VK_S)){
             bobDirection = 3;
             prevBobDirection = bobDirection;
-        }
+        }else
+            bobDirection=0;
 
         
-        if(bobXAux >= SQ_SIZE/2 - BOB_PIXEL_ERROR && bobXAux <= SQ_SIZE/2 + BOB_PIXEL_ERROR && bobYAux >= SQ_SIZE/2 - BOB_PIXEL_ERROR && bobYAux <= SQ_SIZE/2 + BOB_PIXEL_ERROR){
+        if(bobXAux >= SQ_SIZE/2 && bobXAux <= SQ_SIZE/2 && bobYAux >= SQ_SIZE/2 && bobYAux <= SQ_SIZE/2 ){
             
             switch(bobDirection){
                 case 0:
@@ -1887,6 +1905,23 @@ public class Main extends Game {
                 open.add(n);
             }
         }
+    }
+    
+    public boolean enemyIsBlocked(){
+        
+        long currentTime = System.nanoTime();
+        boolean blocked = false;
+        
+        if(Math.abs(currentTime - prevBlockedEnemyTime) >= BLOCKED_ENEMY_TIME_CONSTANT){
+            
+            blocked = prevPmX == pmX && prevPmY == pmY;
+           
+            prevPmX = pmX;
+            prevPmY = pmY;
+            prevBlockedEnemyTime = currentTime;
+        }
+        
+        return blocked;
     }
 
     public void getMovementsR2(Nodo startingNode) {
