@@ -112,7 +112,7 @@ public class Nodo implements Comparable<Nodo>{
             for(int j = 0; j < mapWidth; j++){
                 
                 if(matrix[i][j] == DIAMOND){
-                   System.out.println("ENCONTRE DIAMANTE");
+                   //System.out.println("ENCONTRE DIAMANTE");
                    int dist = computeManhDist(i, j, positionY, positionX);
                    
                    if(dist < minManhDist){
@@ -120,13 +120,14 @@ public class Nodo implements Comparable<Nodo>{
                        minManhDist = dist;
                        closestDiamondXCell = j;
                        closestDiamondYCell = i;
+                       System.out.println("ClosestDiamondXCell = " + closestDiamondXCell + "; closestDiamondYCell = " + closestDiamondYCell);
                    }
                 }
             }
         }
         
-        System.out.println("closestDiamondYCell = " + closestDiamondYCell + "; closestDiamondXCell = " + closestDiamondXCell);
-        System.out.println("FIN getClosestDiamond");
+        /*System.out.println("closestDiamondYCell = " + closestDiamondYCell + "; closestDiamondXCell = " + closestDiamondXCell);
+        System.out.println("FIN getClosestDiamond");*/
     }
     
     public void setLevel(int level){
@@ -135,19 +136,21 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public void setValue(){
-        System.out.println("setValue");
+        
+        //System.out.println("setValue");
         if(level <= 3){ //Weak evaluation function for level 1
             
             value = computeManhDist(positionY, positionX, closestDiamondYCell, closestDiamondXCell);
             value += g;
-            System.out.println("value = " + value);
+            //System.out.println("value = " + value);
         }
         
         else{ //Stronger evaluation function for level 2
             
-            
+            value = computeManhDist(positionY, positionX, closestDiamondYCell, closestDiamondXCell);
+            value += g;
         }
-        System.out.println("Fin setValue");
+        //System.out.println("Fin setValue");
     }
     
     public long getValue(){
@@ -223,7 +226,7 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){
-        System.out.println("ComputeCholdren!!!!");
+        System.out.println("Compute Children!!!!");
         System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
         

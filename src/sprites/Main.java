@@ -161,9 +161,12 @@ public class Main extends Game {
     private final int CHARACTER_START_X = SQ_SIZE;
     private final int CHARACTER_START_Y = SQ_SIZE;
     /*32*//*SQ_SIZE + SQ_SIZE/2*/
-    ;
-    private final int ENEMY_STARTPOS_X = 15 * SQ_SIZE; //11*/ //480
-    private final int ENEMY_STARTPOS_Y = 1 * SQ_SIZE;
+
+    private final int ENEMY_STARTPOS_X1 = 15 * SQ_SIZE; //Level one
+    private final int ENEMY_STARTPOS_Y1 = 1 * SQ_SIZE;
+    
+    private final int ENEMY_STARTPOS_X2 = 12 * SQ_SIZE; //Level two
+    private final int ENEMY_STARTPOS_Y2 = 9 * SQ_SIZE;
     
     private final int INITIAL_DOOR_X_CELL = 8;
     private final int INITIAL_DOOR_Y_CELL = 12;
@@ -191,8 +194,8 @@ public class Main extends Game {
         new code
     
      */
-    private int pmX = ENEMY_STARTPOS_X / SQ_SIZE;
-    private int pmY = ENEMY_STARTPOS_Y / SQ_SIZE;
+    private int pmX = ENEMY_STARTPOS_X1 / SQ_SIZE;
+    private int pmY = ENEMY_STARTPOS_Y1 / SQ_SIZE;
     private double auxmY = -1;
     private double auxmX = -1;
 
@@ -203,8 +206,8 @@ public class Main extends Game {
     private boolean rockPlaced = false;
     private boolean rockDeleted = false;
     
-    private int enemyCoordX = ENEMY_STARTPOS_X;
-    private int enemyCoordY = ENEMY_STARTPOS_Y;
+    private int enemyCoordX = ENEMY_STARTPOS_X1;
+    private int enemyCoordY = ENEMY_STARTPOS_Y1;
     private int direc3 = 0;
     private int prevEnemyDirection = -1;
 
@@ -302,7 +305,23 @@ public class Main extends Game {
         colisionadorAE = new colisionAgentes[AM_SPIDERS]; //Agente-enemigo
         colisionadorBE = new colisionAgentes[AM_SPIDERS];
 
+        if(currLevel <= 3){ //Level one
+            
+            enemyCoordX = ENEMY_STARTPOS_X1;
+            enemyCoordY = ENEMY_STARTPOS_Y1;
+        }   
+        
+        else{
+            
+            enemyCoordX = ENEMY_STARTPOS_X2;
+            enemyCoordY = ENEMY_STARTPOS_Y2;
+        }
+        
+        sprite3 = null;
         sprite3 = new AnimatedSprite(getImages("images/" + enemyName + "_down.png", enemyStrip, 1), enemyCoordX, enemyCoordY);
+        stopEnemy();
+        pmX = enemyCoordX / SQ_SIZE;
+        pmY = enemyCoordY / SQ_SIZE;
         sprite3.move(mX3, mY3);
         sprite3.setAnimate(true);
         sprite3.setLoopAnim(true);
@@ -1015,8 +1034,10 @@ public class Main extends Game {
                     TOT_COINS *= 2;
                     resetLevel();
                     levelStarted[4] = true;
+                    System.out.println("Starting level 2!!");
+                    displayControlMatrix();
                 }
-
+ 
                 checkTime();
 
                 if (pickedCoins1 == TOT_COINS + 1) ////////////////////////// ????/
@@ -1335,7 +1356,8 @@ public class Main extends Game {
         }
     }
     
-    public void deleteInteligent(){
+    public void deleteIntelligence(){
+        
         solutionNodes.clear();
         open.clear();
         closed.clear();
@@ -1362,7 +1384,6 @@ public class Main extends Game {
             
 
             sprite3.move(mX3, mY3);
-            displayControlMatrix();
         }
 
         /*if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
@@ -1401,7 +1422,9 @@ public class Main extends Game {
 
         //System.out.println("pickedCoins = " + pickedCoins);
         if (colisionadorAP.getCollision()) { //The player got to the door, level up!
-            deleteInteligent();
+            
+            stopEnemy();
+            deleteIntelligence();
             currLevel++;
             currMap++;
             map = getImage(mapNames[currMap] + ".png");
@@ -1411,7 +1434,6 @@ public class Main extends Game {
        
         if(colisionadorAB.getCollision()){ //Agent - bucket collision
             
-            System.out.println("I'm in!!!!!!!!!!");
             currRocks = INITIAL_ROCKS;
             bucket = null;
         }
@@ -1476,7 +1498,7 @@ public class Main extends Game {
     
     public void updateRocks(long elapsedTime){
         
-        ArrayList<Integer> toRemove = new ArrayList<Integer>(); //Indices of sprites to remove
+        boolean atLeastOneRockDeleted = false;
         
         for(int i = 0; i < placedRocks.size(); i++){
             
@@ -1487,11 +1509,12 @@ public class Main extends Game {
             
             if(Math.abs(currTime - r.getInitialTime()) >= ROCK_TIME){
                
-               System.out.println("r.getXCell()/SQ_SIZE = " + r.getXCell()/SQ_SIZE + "; r.getYCell()/SQ_SIZE = " + r.getYCell()/SQ_SIZE);
+               //System.out.println("r.getXCell()/SQ_SIZE = " + r.getXCell()/SQ_SIZE + "; r.getYCell()/SQ_SIZE = " + r.getYCell()/SQ_SIZE);
                deleteRockCoords(r.getXCell()/SQ_SIZE, r.getYCell()/SQ_SIZE);
                r.setRockSprite(null);
-               rockDeleted = true;
+               //rockDeleted = true;
                //toRemove.add(i);
+               //atLeastOneRockDeleted = true;
             }
             
             else{
@@ -1501,10 +1524,14 @@ public class Main extends Game {
                 
         }
         
-        for(int j = 0; j < toRemove.size(); j++){
+        if(atLeastOneRockDeleted == true){
             
-            //System.out.println("removing rock!!");
-            placedRocks.remove(toRemove.get(j));
+            System.out.println("At least one rock delete!!");
+            stopEnemy();
+            deleteIntelligence();
+            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+            getMovementsR2(startingNode);
+            displayControlMatrix();
         }
     }
     
@@ -1515,7 +1542,7 @@ public class Main extends Game {
     
     public void placeRock(/*, int bobX, int bobY, int bobXCell, int bobYCell*/){
         
-        System.out.println("bobX = " + bobX + "; bobY = " + bobY);
+        //System.out.println("bobX = " + bobX + "; bobY = " + bobY);
         
         switch(prevBobDirection){
             
@@ -1552,6 +1579,8 @@ public class Main extends Game {
                 //rocksSprites.add(newRock4);
                 break;
         }
+        
+        displayControlMatrix();
     }
 
     public void moveCharacter(long elapsedTime) {
@@ -1861,6 +1890,8 @@ public class Main extends Game {
     }
 
     public void getMovementsR2(Nodo startingNode) {
+        
+        System.out.println("I'm getting movements!!");
         
         open.clear();
         closed.clear();
@@ -2424,34 +2455,44 @@ public class Main extends Game {
                 
                 //System.out.println("pmX = " + pmX + "; pmY = " + pmY);
                 
-                if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY){
+                if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY && controlMatrix[pmY][pmX+1] != BLOCKED_CELL){
                     
                     winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }else{
+                    if(solutionNodes.get(i).getPositionX() == (pmX+1) && solutionNodes.get(i).getPositionY() == pmY && controlMatrix[pmY][pmX+1] == BLOCKED_CELL)
+                        finish = true;
                 }
-                if(solutionNodes.get(i).getPositionX() == (pmX-1) && solutionNodes.get(i).getPositionY() == pmY){
+                if(solutionNodes.get(i).getPositionX() == (pmX-1) && solutionNodes.get(i).getPositionY() == pmY && controlMatrix[pmY][pmX-1] != BLOCKED_CELL){
                     
                     winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }else{
+                    if(solutionNodes.get(i).getPositionX() == (pmX-1) && solutionNodes.get(i).getPositionY() == pmY && controlMatrix[pmY][pmX-1] == BLOCKED_CELL)
+                        finish = true;
                 }
-                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY-1)){
+                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY-1) && controlMatrix[pmY - 1][pmX] != BLOCKED_CELL){
                     
                     winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }else{
+                    if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY-1) && controlMatrix[pmY - 1][pmX] == BLOCKED_CELL)
+                        finish = true;
                 }
-                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY+1)){
+                if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY+1) && controlMatrix[pmY + 1][pmX] != BLOCKED_CELL){
                     
                     winningIndex = i;
                     setMoveDirection(solutionNodes.get(i).getCurrentDirection());
+                }else{
+                    if(solutionNodes.get(i).getPositionX() == pmX && solutionNodes.get(i).getPositionY() == (pmY+1) && controlMatrix[pmY + 1][pmX] == BLOCKED_CELL)
+                        finish = true;
                 }
             }
             
-            if(finish == true || rockPlaced == true){
+            if(finish == true){
                 //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
-                open.clear();
-                closed.clear();
-                solutionNodes.clear();
+                deleteIntelligence();
                 getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
                 finish = false;
                 rockPlaced = false;
@@ -2463,11 +2504,11 @@ public class Main extends Game {
                 //System.out.println("winningIndex = "+winningIndex);
                 //System.out.println("pmX = "+pmX+"; pmY = "+pmY);
                 //System.out.println("solutionNodes.get(" + winningIndex + ").getPositionX() = " + solutionNodes.get(winningIndex).getPositionX() + "; solutionNodes.get(" + winningIndex + ").getPositionY() = " + solutionNodes.get(winningIndex).getPositionY());
-                
             }
             
             
             if(solutionNodes.size() > 0){
+                
                 if(winningIndex == solutionNodes.size() - 1 && pmX == solutionNodes.get(winningIndex).getPositionX() && pmY == solutionNodes.get(winningIndex).getPositionY()){ //If it is the node in which the diamond is
                     //System.out.println("PARA YA LLEGASTE");
                     stopEnemy();
