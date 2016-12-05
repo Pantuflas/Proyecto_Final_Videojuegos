@@ -144,7 +144,7 @@ public class Main extends Game {
     private final int totalMaps = 2;
 
     private final String characterName = "bob";
-    private final String enemyName = "enemy";
+    private final String enemyName = "ghost";
     private final String coinName_red = "diamante_red.png";
     private final String coinName_green = "diamante_green.png";
     private final String[] mapNames = {"Mapa1/Mapa_1_Bordes", "Mapa2/Mapa_2_Bordes"};
@@ -163,7 +163,7 @@ public class Main extends Game {
     */
 
     private final int characterStrip = 8;
-    private final int enemyStrip = 5;
+    private final int enemyStrip = 1;
 
     private int CHARACTER_START_X = SQ_SIZE;
     private int CHARACTER_START_Y = SQ_SIZE;
