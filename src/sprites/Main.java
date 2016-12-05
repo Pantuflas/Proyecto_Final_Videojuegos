@@ -134,7 +134,7 @@ public class Main extends Game {
     private int pickedCoins1 = 0;
     private int pickedCoins2 = 0; //Diamonds picked by the enemy
     private int prevPickedCoins2 = -1; //previous amount of diamonds picked by the enemy
-    private int currLevel = 2;
+    private int currLevel = 0;
     private long startTime;
     private long currTime;
     private long prevCurrTime = -1;
@@ -269,11 +269,11 @@ public class Main extends Game {
         map = getImage(mapNames[currMap] + ".png");
 
         bobStatic = new Sprite(getImage("images/bob_static.png"), CHARACTER_START_X, CHARACTER_START_Y);
-        startScreen = new Sprite(getImage("images/startScreen.png"), 0, 0);
-        gameOverScreen = new Sprite(getImage("images/gameOverScreen.png"), 0, 0);
-        gameWonScreen = new Sprite(getImage("images/gameWonScreen.png"), 0, 0);
-        level1Screen = new Sprite(getImage("images/level1Screen.png"), 0, 0);
-        level2Screen = new Sprite(getImage("images/level2Screen.png"), 0, 0);
+        startScreen = new Sprite(getImage("images/startScreen_Maze.png"), 0, 0);
+        gameOverScreen = new Sprite(getImage("images/gameOverScreen_spongebob.png"), 0, 0);
+        gameWonScreen = new Sprite(getImage("images/gameWonScreen_successbaby.png"), 0, 0);
+        level1Screen = new Sprite(getImage("images/level1Screen_black.png"), 0, 0);
+        level2Screen = new Sprite(getImage("images/level2Screen_black.png"), 0, 0);
 
         numbers = new Sprite[10];
 
@@ -1081,31 +1081,31 @@ public class Main extends Game {
             currLevel = 6;
         }
 
-        //System.out.println("currLevel = " + currLevel);
+        System.out.println("currLevel = " + currLevel);
 
         switch (currLevel) {
 
             case 0:
 
-                /*if(levelStarted[0] == false){
+                if(levelStarted[0] == false){
 
-                bsSound.play("sounds/fever.wav"); 
+                bsSound.play("music/JawsTheme.wav"); 
                 levelStarted[0] = true;
             }
 
             startScreen.update(elapsedTime);
 
-            if(keyDown(KeyEvent.VK_ENTER))*/
+            if(keyDown(KeyEvent.VK_ENTER))
                 currLevel++;
 
                 break;
 
             case 1:
 
-                /*levelStarted[1] = true;
+                levelStarted[1] = true;
                 level1Screen.update(elapsedTime);
 
-                if(keyDown(KeyEvent.VK_SPACE))*/
+                if(keyDown(KeyEvent.VK_SPACE))
                 currLevel++;
 
                 break;
@@ -1149,7 +1149,8 @@ public class Main extends Game {
             case 4:
 
                 if (levelStarted[4] == false) { //Level 2
-
+                    
+                    bsSound.play("music/JawsTheme.wav"); 
                     startTime = (long) System.nanoTime() / TIME_FACTOR;
                     TOT_COINS *= 2;
                     resetLevel();
@@ -2824,8 +2825,9 @@ public class Main extends Game {
                 renderGameWithObjects(g);
                 g.setFont(new Font("SansSerif", Font.BOLD, 20));
                 g.setColor(Color.WHITE);
-                g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 200);
-                g.drawString("Lives:    " + lives, 18*SQ_SIZE, 250);
+                g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 170);
+                g.drawString("Lives:    " + lives, 18*SQ_SIZE, 220);
+                g.drawString("Remaining diamonds:    " + (TOT_COINS - pickedCoins1), 18*SQ_SIZE, 270);
                 break;
 
             case 3:
