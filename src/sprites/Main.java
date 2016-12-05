@@ -45,7 +45,7 @@ public class Main extends Game {
     Agente puerta;
     Agente bucket;
 
-    SpriteGroup grupoAgente, grupoBala, grupoPuerta, grupoBucket, grupoEnemigo;
+    SpriteGroup grupoAgente, grupoBala, grupoPuerta, grupoBucket;
     SpriteGroup grupoMapa;
 
     colisionAgentes colisionadorBM; //Bala-mapa
@@ -53,7 +53,6 @@ public class Main extends Game {
     colisionAgentes[] colisionadorBE; //Bala-enemigo
     colisionAgentes colisionadorAP; //Agente-puerta
     colisionAgentes colisionadorAB; //Agente-cubeta
-    colisionAgentes colisionadorEP;
 
     Timer velocidad;
 
@@ -464,10 +463,6 @@ public class Main extends Game {
         grupoAgente = new SpriteGroup("Grupo agente");
         grupoAgente.add(agente);
         grupoAgente.setBackground(fondo);
-        
-        grupoEnemigo = new SpriteGroup("Grupo enemigo");
-        grupoEnemigo.add(sprite3);
-        grupoEnemigo.setBackground(fondo);
 
         grupoPuerta = new SpriteGroup("Grupo puerta");
         grupoPuerta.add(puerta);
@@ -487,9 +482,6 @@ public class Main extends Game {
 
         colisionadorBM = new colisionAgentes("BM");
         colisionadorBM.setCollisionGroup(grupoMapa, grupoBala);
-        
-        colisionadorEP = new colisionAgentes("EP");
-        colisionadorEP.setCollisionGroup(grupoEnemigo, grupoPuerta);
 
         velocidad = new Timer(1);
 
@@ -1465,26 +1457,12 @@ public class Main extends Game {
         fondo.setToCenter(agente);
         fondo.update(elapsedTime);
         grupoAgente.update(elapsedTime);
-        grupoEnemigo.update(elapsedTime);
         grupoPuerta.update(elapsedTime);
         grupoBucket.update(elapsedTime);
 
         grupoBala.update(elapsedTime);
         checkBullets();
         updateCoins(elapsedTime);
-        
-        if(pickedCoins2 == TOT_COINS){ //If the enemy has caught all the diamonds
-            
-            System.out.println("The enemy has all the diamonds!!!!!");
-            colisionadorEP.checkCollision(); //Check enemy-door collision
-        }
-        
-        if(colisionadorEP.getCollision()){ //If the enemy collided with the door
-            
-            System.out.println("The enemy is going to win!!!!!");
-            lives--;
-            resetLevel();
-        }
         
         //colisionadorBM.checkCollision(); //Create map through object
         if (pickedCoins1 == TOT_COINS) { //If the player has already picked all the diamonds
@@ -1932,10 +1910,7 @@ public class Main extends Game {
                 sprite3.setBackground(fondo);
                 break;
         }
-        
-        grupoEnemigo = new SpriteGroup("Grupo enemigo");
-        grupoEnemigo.add(sprite3);
-        
+
         prevEnemyDirection = direc3;
     }
 
