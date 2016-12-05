@@ -57,11 +57,13 @@ public class Nodo implements Comparable<Nodo>{
         setMap(map);
         setPickedDiamonds(pickedDiamonds);
         
+        /*
         System.out.println();
         System.out.println("X: "+positionX+"         Y:"+positionY);
         System.out.println("Parent index: "+parentIndex);
         System.out.println("CurrentDirection: "+currentDirection);
         System.out.println("Height: "+g);
+        */
         
         if(level <= 3){
             
@@ -103,9 +105,11 @@ public class Nodo implements Comparable<Nodo>{
         closestDiamondXCell = -1;
         closestDiamondYCell = -1;
         int minManhDist = 1000;
+        /*
         System.out.println("getClosestDiamond");
         System.out.println("mapHeight = " + mapHeight + "; mapWidth = " + mapWidth);
         System.out.println("positionY = " + positionY + "; positionX = " + positionX);
+        */
         
         for(int i = 0; i < mapHeight; i++){
             
@@ -120,7 +124,7 @@ public class Nodo implements Comparable<Nodo>{
                        minManhDist = dist;
                        closestDiamondXCell = j;
                        closestDiamondYCell = i;
-                       System.out.println("ClosestDiamondXCell = " + closestDiamondXCell + "; closestDiamondYCell = " + closestDiamondYCell);
+                       //System.out.println("ClosestDiamondXCell = " + closestDiamondXCell + "; closestDiamondYCell = " + closestDiamondYCell);
                    }
                 }
             }
@@ -226,8 +230,8 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){
-        System.out.println("Compute Children!!!!");
-        System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
+        //System.out.println("Compute Children!!!!");
+        //System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
         
         if(right == true){

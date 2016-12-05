@@ -66,7 +66,7 @@ public class Main extends Game {
     private Sprite gameWonScreen;
     private Sprite level1Screen;
     private Sprite level2Screen;
-    //private Sprite sideBar;
+    private Sprite sideBar;
     private Sprite[] numbers;
     private Sprite[] numbersLives;
 
@@ -85,7 +85,7 @@ public class Main extends Game {
     private BufferedImage map;
     private double posx, posy;
     private int[][] controlMatrix;
-    private final int SQ_SIZE = 32; //32 pixels is the side of each square of the game
+    private static final int SQ_SIZE = 32; //32 pixels is the side of each square of the game
     private int mapHeight;
     private int mapWidth;
     private final int BLOCKED_CELL = -1;
@@ -153,8 +153,14 @@ public class Main extends Game {
     private final String rockName = "rock";
     private int currMap = (currLevel < 3) ? 0 : 1;
 
-    private static final int CLIP_WIDTH = 960;
-    private static final int CLIP_HEIGHT = 480;
+    private static int CLIP_WIDTH = 17*SQ_SIZE + 6*SQ_SIZE; //first level map + sidebar
+    private static int CLIP_HEIGHT = 17*SQ_SIZE;
+    
+    /*For level 2:
+    
+        CLIP_WIDTH = 23*SQ_SIZE + 6*SQ_SIZE; //second level map + sidebar
+        CLIP_HEIGHT = 15*SQ_SIZE;
+    */
 
     private final int characterStrip = 8;
     private final int enemyStrip = 5;
@@ -266,7 +272,6 @@ public class Main extends Game {
         gameWonScreen = new Sprite(getImage("images/gameWonScreen.png"), 0, 0);
         level1Screen = new Sprite(getImage("images/level1Screen.png"), 0, 0);
         level2Screen = new Sprite(getImage("images/level2Screen.png"), 0, 0);
-        //sideBar = new Sprite(getImage("images/sideBar.png"), 768, 0);        
 
         numbers = new Sprite[10];
 
@@ -294,11 +299,19 @@ public class Main extends Game {
 
     public void resetLevel() {
         
-        if(currLevel <= 3)
+        if(currLevel <= 3){
+            
+            sideBar = new Sprite(getImage("images/sidebar2.png"), 17*SQ_SIZE, 0); 
             TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_ONE;
+        }
         
-        else
+        else{
+            
             TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_TWO;
+            sideBar = new Sprite(getImage("images/sidebar2.png"), 23*SQ_SIZE, 0);
+            CLIP_WIDTH = 23*SQ_SIZE + 6*SQ_SIZE; //second level map + sidebar
+            CLIP_HEIGHT = 15*SQ_SIZE;
+        }
         
         path = new ArrayList<Integer>();
         moves = new ArrayList<Integer>();
@@ -367,7 +380,7 @@ public class Main extends Game {
         agente.setBackground(fondo);
         agente.obtenerBsLoader(bsLoader);
 
-        //sideBar.setBackground(fondo);
+        sideBar.setBackground(fondo);
         
         puerta = new Agente("2");
         doorX = INITIAL_DOOR_X_CELL;
@@ -475,6 +488,7 @@ public class Main extends Game {
         int auxDoorY = doorY;
         
         if (prevCurrTime == currTime) {
+            
             return;
         }
 
@@ -502,7 +516,7 @@ public class Main extends Game {
         for (int i : myLY) {
             for (int j : myLX) {
 
-                if (controlMatrix[i][j] >= 1) {
+                if (controlMatrix[i][j] == OPEN_CELL || controlMatrix[i][j] == INTERSECTION) {
 
                     if (randomInt == 0) {
 
@@ -778,7 +792,9 @@ public class Main extends Game {
     }
 
     public void displayControlMatrix() {
-
+        
+        System.out.println();
+        
         for (int i = 0; i < mapHeight / SQ_SIZE; i++) {
 
             for (int j = 0; j < mapWidth / SQ_SIZE; j++) {
@@ -792,6 +808,9 @@ public class Main extends Game {
 
             System.out.println();
         }
+        
+        System.out.println();
+        
     }
 
     public void fillControlMatrix() {
@@ -1003,8 +1022,9 @@ public class Main extends Game {
             case 2:
 
                 levelStarted[2] = true; //Level 1
-
+                
                 if (pickedCoins1 == TOT_COINS + 1) {
+                    
                     currLevel++;
                 }
 
@@ -1095,7 +1115,6 @@ public class Main extends Game {
 
         //if(pickedCoins == TOT_COINS)
         //System.exit(0);
-        //sideBar.update(elapsedTime);
         computeCornersCoords();
         //displayTotCoords();
         computeCornersCells();
@@ -1376,7 +1395,7 @@ public class Main extends Game {
 
     public void updateGameWithObjects(long elapsedTime) {
 
-        //sideBar.update(elapsedTime);
+        sideBar.update(elapsedTime);
         computeCornersCoords();
         //displayTotCoords();
         computeCornersCells();
@@ -1461,6 +1480,11 @@ public class Main extends Game {
         //System.out.println("currRocks = " + currRocks);
         
         updateRocks(elapsedTime);
+        
+        if (keyPressed(KeyEvent.VK_K)){
+            System.out.println("KKKKKKK en"+bobYCell+"   &   "+bobXCell+ "           "+controlMatrix[bobYCell][bobXCell-1]);
+        }
+        
 
         if (keyPressed(KeyEvent.VK_SPACE)) {
             
@@ -1479,7 +1503,14 @@ public class Main extends Game {
                     placeRock(/*, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE*/);
                     rockPlaced = true;
                     currRocks--;
+                    displayControlMatrix();
                     System.out.println("currRocks = " + currRocks);
+                }else{
+                    
+                    displayControlMatrix();
+                    System.out.println("bobXCell = " + bobXCell + "; bobYCell = " + bobYCell);
+                    System.out.println("prevBobDirection = " + prevBobDirection);
+                    System.out.println("rock cant be placed");
                 }
             }
         }
@@ -1499,19 +1530,19 @@ public class Main extends Game {
         
         System.out.println("bobXCell = "+bobXCell+"   bobYCell = "+bobYCell+ "   Direction = "+prevBobDirection);
         
-        switch(prevBobDirection){
+        switch(prevBobDirection){ //It had prevBobDirection as parameter of the switch!
             
-            case 1:
-                return controlMatrix[bobYCell - 1][bobXCell] == OPEN_CELL;
+            case 1: //Up
+                return controlMatrix[bobYCell - 1][bobXCell] == OPEN_CELL || controlMatrix[bobYCell - 1][bobXCell] == INTERSECTION;
                 
-            case 3:
-                return controlMatrix[bobYCell + 1][bobXCell] == OPEN_CELL;
+            case 3: //Down
+                return controlMatrix[bobYCell + 1][bobXCell] == OPEN_CELL || controlMatrix[bobYCell + 1][bobXCell] == INTERSECTION;
                 
-            case 4:
-                return controlMatrix[bobYCell][bobXCell - 1] == OPEN_CELL;
+            case 4: //Left
+                return controlMatrix[bobYCell][bobXCell - 1] == OPEN_CELL || controlMatrix[bobYCell][bobXCell - 1] == INTERSECTION;
                 
-            case 2:
-                return controlMatrix[bobYCell][bobXCell + 1] == OPEN_CELL;
+            case 2: //Right
+                return controlMatrix[bobYCell][bobXCell + 1] == OPEN_CELL || controlMatrix[bobYCell][bobXCell + 1] == INTERSECTION;
         }
         
         return false;
@@ -1533,17 +1564,21 @@ public class Main extends Game {
                //System.out.println("r.getXCell()/SQ_SIZE = " + r.getXCell()/SQ_SIZE + "; r.getYCell()/SQ_SIZE = " + r.getYCell()/SQ_SIZE);
                deleteRockCoords(r.getXCell()/SQ_SIZE, r.getYCell()/SQ_SIZE);
                r.setRockSprite(null);
+               r.setXCell(0);
+               r.setYCell(0);
                //rockDeleted = true;
                //toRemove.add(i);
                //atLeastOneRockDeleted = true;
+               addIntersectionsToControlMatrix();
             }
             
             else{
                 
                 r.update(elapsedTime);
-            }
-                
+            }   
         }
+        
+        
         
         if(atLeastOneRockDeleted == true){
             
@@ -1606,7 +1641,6 @@ public class Main extends Game {
 
     public void moveCharacter(long elapsedTime) {
 
-        //sideBar.update(elapsedTime);
         computeCornersCoords();
         //displayTotCoords();
         computeCornersCells();
@@ -1697,7 +1731,7 @@ public class Main extends Game {
         bobXAux = (int)agente.getX() - (SQ_SIZE*bobXCell) + (SQ_SIZE/2);
         bobYAux = (int)agente.getY() - (SQ_SIZE*bobYCell) + (SQ_SIZE/2);
         
-        if(keyDown(KeyEvent.VK_D)){
+        if(keyDown(KeyEvent.VK_RIGHT)){
             
             agente.setDirection(2);
             agente.setStatus(1);
@@ -1709,7 +1743,7 @@ public class Main extends Game {
                 
             prevBobDirection = bobDirection;
         }
-        else if(keyDown(KeyEvent.VK_A)){
+        else if(keyDown(KeyEvent.VK_LEFT)){
             
             agente.setDirection(4);
             agente.setStatus(1);
@@ -1721,7 +1755,7 @@ public class Main extends Game {
             
             prevBobDirection = bobDirection;
         }
-        else if(keyDown(KeyEvent.VK_W)){
+        else if(keyDown(KeyEvent.VK_UP)){
             
             agente.setDirection(1);
             agente.setStatus(1);
@@ -1733,7 +1767,7 @@ public class Main extends Game {
             
             prevBobDirection = bobDirection;
         }
-        else if(keyDown(KeyEvent.VK_S)){
+        else if(keyDown(KeyEvent.VK_DOWN)){
             
             agente.setDirection(3);
             agente.setStatus(1);
@@ -2688,18 +2722,20 @@ public class Main extends Game {
                 break;
 
             case 2:
-
+                
                 renderGameWithObjects(g);
+                g.drawString("" + currRocks, 20*SQ_SIZE, 200);
                 break;
 
             case 3:
-
+                
                 level2Screen.render(g);
                 break;
 
             case 4:
-
+                
                 renderGameWithObjects(g);
+                //g.drawString("" + currRocks, 26*SQ_SIZE, 250);
                 break;
 
             case 5:
@@ -2721,7 +2757,7 @@ public class Main extends Game {
 
         //g.drawImage(map, 0, 0, null);
         fondo.render(g);
-        //sideBar.render(g);
+        sideBar.render(g);
 
         /*switch(lives){
             
@@ -2813,8 +2849,6 @@ public class Main extends Game {
                 totCoins2[j].render(g);
             }
         }
-
-        //g.drawString("Bullets:" + currBullets, 780, 250);
     }
     
     public void renderRocks(Graphics2D g){
