@@ -107,7 +107,7 @@ public class Main extends Game {
     private int[][] cornersCells;
     private final int PIXEL_ERR = SQ_SIZE / 8;
     private final int INNER_POINT_DIFF = SQ_SIZE / 4;
-    private final int MIN_ACCEPTABLE_DISTANCE_BETWEEN_DIAMONDS = 2;
+    private final int MIN_ACCEPTABLE_DISTANCE_BETWEEN_DIAMONDS = 3;
 
     private final int AM_SPIDERS = 1;
 
