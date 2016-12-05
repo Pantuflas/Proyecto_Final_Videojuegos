@@ -58,7 +58,8 @@ public class Main extends Game {
 
     private int currBullets;
     private int currRocks;
-
+    private boolean caughtBucket = false;
+    
     //////////////////////////////////////////////////
     private Sprite startScreen;
     private Sprite gameOverScreen;
@@ -124,7 +125,7 @@ public class Main extends Game {
     private final int EXTRA_CELLS = 6;
     private final int DOOR = 4;
     private final int INTERSECTION = 2;
-    private final int INITIAL_ROCKS = 3;
+    private final int INITIAL_ROCKS = 5;
 
     private int[] directionCounter;
 
@@ -184,10 +185,10 @@ public class Main extends Game {
     private int bobYCell = CHARACTER_START_Y / SQ_SIZE;
     private int bobXAux = -1;
     private int bobYAux = -1;
-    private int bobDirection = 0;
+    private int bobDirection = 3;
     private int bobMoveX = 0;
     private int bobMoveY = 0;
-    private int prevBobDirection = 0;
+    private int prevBobDirection = 3;
 
     /*
         
@@ -241,11 +242,12 @@ public class Main extends Game {
      */
     public void CargarImagenes() {
 
-        bsLoader.storeImages("0_0", getImages("images/" + characterName + "_up.png", characterStrip, 1));
-        bsLoader.storeImages("0_1", getImages("images/" + characterName + "_down.png", characterStrip, 1));
-        bsLoader.storeImages("0_2", getImages("images/" + characterName + "_left.png", characterStrip, 1));
-        bsLoader.storeImages("0_3", getImages("images/" + characterName + "_right.png", characterStrip, 1));
-
+        bsLoader.storeImages("0_1", getImages("images/" + characterName + "_up.png", characterStrip, 1));
+        bsLoader.storeImages("0_2", getImages("images/" + characterName + "_right.png", characterStrip, 1));
+        bsLoader.storeImages("0_3", getImages("images/" + characterName + "_down.png", characterStrip, 1));
+        bsLoader.storeImages("0_4", getImages("images/" + characterName + "_left.png", characterStrip, 1));
+                
+        
         bsLoader.storeImages("1_0", getImages("images/" + enemyName + "_up.png", enemyStrip, 1));
         bsLoader.storeImages("1_1", getImages("images/" + enemyName + "_down.png", enemyStrip, 1));
         bsLoader.storeImages("1_2", getImages("images/" + enemyName + "_left.png", enemyStrip, 1));
@@ -357,8 +359,8 @@ public class Main extends Game {
         //CargarImagenes();
 
         ///////////////////////////////////////////////////////////
-        agente = new Agente("0");
-        agente.setImages(bsLoader.getStoredImages("0_0"));
+        agente = new Agente("0"); //Start upwards!
+        agente.setImages(bsLoader.getStoredImages("0_3"));
         agente.setX(bobX);
         agente.setY(bobY);
         agente.setDirection(1);
@@ -1448,11 +1450,12 @@ public class Main extends Game {
         }
 
         colisionadorAB.checkCollision();
-       
-        if(colisionadorAB.getCollision()){ //Agent - bucket collision
+        
+        if(colisionadorAB.getCollision() && caughtBucket == false){ //Agent - bucket collision
             
             currRocks = INITIAL_ROCKS;
             bucket = null;
+            caughtBucket = true;
         }
         
         //System.out.println("currRocks = " + currRocks);
@@ -1476,6 +1479,7 @@ public class Main extends Game {
                     placeRock(/*, bobX, bobY, bobX/SQ_SIZE, bobY/SQ_SIZE*/);
                     rockPlaced = true;
                     currRocks--;
+                    System.out.println("currRocks = " + currRocks);
                 }
             }
         }
@@ -1679,6 +1683,11 @@ public class Main extends Game {
         }
     }
     
+    public void animateCharacter(int bobX, int bobY, int bobDirection){
+        
+        
+    }
+    
     public void moveCharacterMemo(long elapsedTime){
         
         bobX = (int)agente.getX();
@@ -1689,24 +1698,58 @@ public class Main extends Game {
         bobYAux = (int)agente.getY() - (SQ_SIZE*bobYCell) + (SQ_SIZE/2);
         
         if(keyDown(KeyEvent.VK_D)){
+            
+            agente.setDirection(2);
+            agente.setStatus(1);
+            
             bobDirection = 2;
+            
+            if(prevBobDirection != bobDirection)
+                animateCharacter(bobX, bobY, bobDirection);
+                
             prevBobDirection = bobDirection;
         }
         else if(keyDown(KeyEvent.VK_A)){
+            
+            agente.setDirection(4);
+            agente.setStatus(1);
+            
             bobDirection = 4;
+           
+            if(prevBobDirection != bobDirection)
+                animateCharacter(bobX, bobY, bobDirection);
+            
             prevBobDirection = bobDirection;
         }
         else if(keyDown(KeyEvent.VK_W)){
+            
+            agente.setDirection(1);
+            agente.setStatus(1);
+            
             bobDirection = 1;
+            
+            if(prevBobDirection != bobDirection)
+                animateCharacter(bobX, bobY, bobDirection);
+            
             prevBobDirection = bobDirection;
         }
         else if(keyDown(KeyEvent.VK_S)){
+            
+            agente.setDirection(3);
+            agente.setStatus(1);
+            
             bobDirection = 3;
+            
+            if(prevBobDirection != bobDirection)
+                animateCharacter(bobX, bobY, bobDirection);
+            
             prevBobDirection = bobDirection;
-        }else
-            bobDirection=0;
+        }else{
+            
+            agente.setStatus(0);
+            bobDirection = 0;
+        }
 
-        
         if(bobXAux >= SQ_SIZE/2 && bobXAux <= SQ_SIZE/2 && bobYAux >= SQ_SIZE/2 && bobYAux <= SQ_SIZE/2 ){
             
             switch(bobDirection){
@@ -1764,12 +1807,12 @@ public class Main extends Game {
         agente.move(bobMoveX, bobMoveY);
     }
 
-    public void resetCharacter() {
+    public void resetCharacter(){
 
         bobX = CHARACTER_START_X;
         bobY = CHARACTER_START_Y;
         agente = new Agente("0");
-        agente.setImages(bsLoader.getStoredImages("0_0"));
+        agente.setImages(bsLoader.getStoredImages("0_2"));
         agente.setX(bobX);
         agente.setY(bobY);
         agente.setDirection(1);
@@ -1789,21 +1832,24 @@ public class Main extends Game {
         enemyCoordY = (int) sprite3.getY();
     }
 
-    public void changeAnimation(int character, int direction) {
+    public void changeAnimation(/*int character, int direction*/) {
 
-        if(prevEnemyDirection == direction)
+        if(prevEnemyDirection == direc3){
+            
+            sprite3.setAnimate(true);
+            sprite3.setLoopAnim(true);
             return;
+        }
 
-        //System.out.println("prevEnemyDirection = " + prevEnemyDirection);
-        //System.out.println("direction = " + direction);
-        prevEnemyDirection = direction;
+        System.out.println("prevEnemyDirection = " + prevEnemyDirection);
+        System.out.println("direction = " + direc3);
 
         setEnemyCoords();
 
-        switch (direction) {
+        switch(direc3){
 
             case 1:
-
+                
                 sprite3 = new AnimatedSprite(getImages("images/" + enemyName + "_up.png", enemyStrip, 1), enemyCoordX, enemyCoordY);
                 sprite3.setAnimate(true);
                 sprite3.setLoopAnim(true);
@@ -1834,6 +1880,8 @@ public class Main extends Game {
                 sprite3.setBackground(fondo);
                 break;
         }
+        
+        prevEnemyDirection = direc3;
     }
 
     public void getMoves() {
@@ -1914,7 +1962,7 @@ public class Main extends Game {
         
         if(Math.abs(currentTime - prevBlockedEnemyTime) >= BLOCKED_ENEMY_TIME_CONSTANT){
             
-            blocked = prevPmX == pmX && prevPmY == pmY;
+            blocked = prevPmX == pmX && prevPmY == pmY && solutionNodes.size() == 0;
            
             prevPmX = pmX;
             prevPmY = pmY;
@@ -2464,8 +2512,6 @@ public class Main extends Game {
                 direc3 = 4;
                 break;
         }
-        
-        changeAnimation(1, direc3);
     }
 
     public void moveR2(/*long elapsedTime*/) {
@@ -2552,7 +2598,7 @@ public class Main extends Game {
             }
         }
         
-        
+        changeAnimation(/*1, direc3*/);
 
         /*int currentDecisionIndex = 0;
         for(int i = 0; i<moves.size(); i++){

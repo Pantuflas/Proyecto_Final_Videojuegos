@@ -86,6 +86,11 @@ public class Agente extends AdvanceSprite {
                 break;
         }
     }
+    
+    public int getDireccion(){
+        
+        return direccion;
+    }
 
     /*
      * Con esta funcion, se carga el bsloader en el agente, para que lo tenga referenciado
@@ -117,5 +122,10 @@ public class Agente extends AdvanceSprite {
         update(elapsedTime);
         setSpeed(0, 0);
         return true;
+    }
+    
+    public int getEstado(){
+        
+        return estado;
     }
 }
