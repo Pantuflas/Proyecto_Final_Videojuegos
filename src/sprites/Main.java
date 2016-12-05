@@ -2543,6 +2543,11 @@ public class Main extends Game {
                 break;
         }
     }
+    
+    public boolean enemyWon(){
+        
+        return doorX == pmX && doorY == pmY;
+    }
 
     public void moveR2(/*long elapsedTime*/) {
 
@@ -2604,10 +2609,20 @@ public class Main extends Game {
                 //System.out.println("PARA YA LLEGASTE");
                 stopEnemy();
                 deleteIntelligence();
-                getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
-                finish = false;
-                rockPlaced = false;
-                rockDeleted = false;
+                
+                if(enemyWon()){
+                    
+                    lives--;
+                    resetLevel();
+                }
+                
+                else{
+                    
+                    getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+                    finish = false;
+                    rockPlaced = false;
+                    rockDeleted = false;
+                }
             }
             
             if(winningIndex == solutionNodes.size() - 1){
