@@ -303,6 +303,7 @@ public class Main extends Game {
         
         caughtBucket = false;
         isBlocked = false;
+        prevBlockedEnemyTime = 0;
         
         if(currLevel <= 3){
             
@@ -490,6 +491,9 @@ public class Main extends Game {
 
         allIsReady = true;
         
+        stopEnemy();
+        deleteIntelligence();
+        
         Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
         getMovementsR2(startingNode);
     }
@@ -663,7 +667,8 @@ public class Main extends Game {
             
             else{
                 
-                if(auxAreTooCloseCoords(totCoinsCells2[j%TOT_COINS][0], totCoinsCells2[j%TOT_COINS][1], x, y))
+                if(auxAreTooCloseCoords(totCoinsCells2[j%TOT_COINS][0], totCoinsCells2[j%TOT_COINS][1], x, y)
+                || auxAreTooCloseCoords(pmX, pmY, x, y))
                     return true;
             }
         }
@@ -1111,6 +1116,11 @@ public class Main extends Game {
                 break;
 
             case 2:
+                if(lives == 1){
+                    System.out.println("OPEN " + open.size());
+                    System.out.println("CLOSED " + closed.size());
+                    System.out.println("SOLUTION " + solutionNodes.size());
+                }
 
                 levelStarted[2] = true; //Level 1
                 
@@ -1148,7 +1158,7 @@ public class Main extends Game {
 
             case 4:
 
-                if (levelStarted[4] == false) { //Level 2
+                if(levelStarted[4] == false){ //Level 2
                     
                     bsSound.play("music/JawsTheme.wav"); 
                     startTime = (long) System.nanoTime() / TIME_FACTOR;
@@ -1161,8 +1171,8 @@ public class Main extends Game {
  
                 checkTime();
 
-                if (pickedCoins1 == TOT_COINS + 1) ////////////////////////// ????/
-                {
+                if (pickedCoins1 == TOT_COINS + 1){ ////////////////////////// ????/
+                
                     currLevel++;
                 }
 
@@ -1171,32 +1181,32 @@ public class Main extends Game {
 
             case 5:
 
-                /*if(levelStarted[5] == false){
+            if(levelStarted[5] == false){
                 
                 bsSound.stopAll();   
-                bsSound.play("sounds/loop.wav");  
+                bsSound.play("music/victory.wav");  
                 levelStarted[5] = true;
             }
 
             gameWonScreen.update(elapsedTime);
 
-            if(keyDown(KeyEvent.VK_ENTER))*/
+            if(keyDown(KeyEvent.VK_ENTER))
                 System.exit(0);
 
                 break;
 
             case 6:
 
-                /*if(levelStarted[6] == false){
+            if(levelStarted[6] == false){
                 
                 bsSound.stopAll();
-                playSound("sounds/gameOver.wav");
+                playSound("music/game_over.wav");
                 levelStarted[6] = true;   
             }
 
             gameOverScreen.update(elapsedTime);
 
-            if(keyDown(KeyEvent.VK_ENTER))*/
+            if(keyDown(KeyEvent.VK_ENTER))
                 System.exit(0);
 
                 break;
@@ -2828,6 +2838,10 @@ public class Main extends Game {
                 g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 170);
                 g.drawString("Lives:    " + lives, 18*SQ_SIZE, 220);
                 g.drawString("Remaining diamonds:    " + (TOT_COINS - pickedCoins1), 18*SQ_SIZE, 270);
+                
+                if(currTime%2 == 0 && pickedCoins2 == TOT_COINS)
+                    g.drawString("Hurry up!", 7*SQ_SIZE, 7*SQ_SIZE);
+                
                 break;
 
             case 3:
@@ -2840,8 +2854,13 @@ public class Main extends Game {
                 renderGameWithObjects(g);
                 g.setFont(new Font("SansSerif", Font.BOLD, 20));
                 g.setColor(Color.WHITE);
-                g.drawString("Rocks:    " + currRocks, 25*SQ_SIZE, 200);
-                g.drawString("Lives:    " + lives, 25*SQ_SIZE, 250);
+                g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 170);
+                g.drawString("Lives:    " + lives, 18*SQ_SIZE, 220);
+                g.drawString("Remaining diamonds:    " + (TOT_COINS - pickedCoins1), 18*SQ_SIZE, 270);
+                
+                if(currTime%2 == 0 && pickedCoins2 == TOT_COINS)
+                    g.drawString("Hurry up!", 7*SQ_SIZE, 11*SQ_SIZE);
+                
                 break;
 
             case 5:
