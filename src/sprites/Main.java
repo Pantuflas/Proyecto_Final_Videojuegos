@@ -44,6 +44,8 @@ public class Main extends Game {
     Agente sideB;
     Agente puerta;
     Agente bucket;
+    /*Sprite portal_entrada;
+    Sprite portal_salida;*/
 
     SpriteGroup grupoAgente, grupoBala, grupoPuerta, grupoBucket;
     SpriteGroup grupoMapa;
@@ -138,6 +140,8 @@ public class Main extends Game {
     private long startTime;
     private long currTime;
     private long prevCurrTime = -1;
+    /*private long prevCurrTime_Portal_Entrada = -1;
+    private long prevCurrTime_Portal_Salida = -1;*/
     private final long TIME_FACTOR = 999999999;
     private final long DOOR_TIME_FACTOR = 10;
     private final int ROCK_TIME = 5;
@@ -152,6 +156,7 @@ public class Main extends Game {
     private final String doorName = "red_door";
     private final String bucketName = "poket";
     private final String rockName = "rock";
+    //private final String portalName = "portal"; //portal_entrada and portal_salida
     private int currMap = (currLevel < 3) ? 0 : 1;
 
     private static int CLIP_WIDTH = 960; //first level map + sidebar
@@ -196,6 +201,17 @@ public class Main extends Game {
     private int bobMoveX = 0;
     private int bobMoveY = 0;
     private int prevBobDirection = 3;
+    
+    /*private int portal_entradaX = -1;
+    private int portal_entradaY = -1;
+    private final int INITIAL_PORTAL_X_CELL = 8;
+    private final int INITIAL_PORTAL_Y_CELL = 13;
+    
+    private int portal_salidaX = -1;
+    private int portal_salidaY = -1;
+    private final int ENDING_PORTAL_X_CELL = 8;
+    private final int ENDING_PORTAL_Y_CELL = 5;*/
+
 
     /*
         
@@ -264,6 +280,8 @@ public class Main extends Game {
         bsLoader.storeImages("2_0", getImages("images/" + doorName + ".png", 1, 1));
         bsLoader.storeImages("3_0", getImages("images/" + bucketName + ".png", 1, 1));
         bsLoader.storeImages("4_0", getImages("images/" + rockName + ".png", 1, 1));
+        //bsLoader.storeImages("5_0", getImages("images/" + portalName + "_entrada.png", 1, 1));
+        //bsLoader.storeImages("5_1", getImages("images/" + portalName + "_salida.png", 1, 1));
         ///////////////////////////////////////////////////////////////////////////////////
 
         map = getImage(mapNames[currMap] + ".png");
@@ -302,6 +320,8 @@ public class Main extends Game {
     public void resetLevel() {
         
         prevCurrTime = -1;
+        //prevCurrTime_Portal_Entrada = -1;
+        //prevCurrTime_Portal_Salida = -1;
         stopEnemy();
         caughtBucket = false;
         isBlocked = false;
@@ -421,7 +441,21 @@ public class Main extends Game {
         bucket.setBackground(fondo);
         bucket.obtenerBsLoader(bsLoader);
         resetBucketCoords();
-
+        
+        /*portal_entradaX = INITIAL_PORTAL_X_CELL;
+        portal_entradaY = INITIAL_PORTAL_Y_CELL;
+        portal_entrada = new Sprite(getImage("images/" + portalName + "_entrada.png"),  portal_entradaX*SQ_SIZE, portal_entradaY*SQ_SIZE);
+        portal_entrada.setX(SQ_SIZE*portal_entradaX);
+        portal_entrada.setY(SQ_SIZE*portal_entradaY);
+        portal_entrada.setBackground(fondo);
+        
+        portal_salidaX = ENDING_PORTAL_X_CELL;
+        portal_salidaY = ENDING_PORTAL_Y_CELL;
+        portal_salida = new Sprite(getImage("images/" + portalName + "_salida.png"),  portal_salidaX*SQ_SIZE, portal_salidaY*SQ_SIZE); 
+        portal_salida.setX(SQ_SIZE*portal_salidaX);
+        portal_salida.setY(SQ_SIZE*portal_salidaY);
+        portal_salida.setBackground(fondo);*/
+        
         ////////////////////////////////////////////////////////////
         mapHeight = map.getHeight();
         System.out.println("mapHeight/SQ_SIZE = " + mapHeight / SQ_SIZE);
@@ -466,6 +500,7 @@ public class Main extends Game {
         displayCoinMatrix();
 
         /////////////////////////////////////////////////////////
+        
         grupoAgente = new SpriteGroup("Grupo agente");
         grupoAgente.add(agente);
         grupoAgente.setBackground(fondo);
@@ -488,7 +523,7 @@ public class Main extends Game {
 
         colisionadorBM = new colisionAgentes("BM");
         colisionadorBM.setCollisionGroup(grupoMapa, grupoBala);
-
+       
         velocidad = new Timer(1);
 
         allIsReady = true;
@@ -568,7 +603,7 @@ public class Main extends Game {
         if(bucket == null || prevCurrTime == currTime) {
             return;
         }
-
+        
         ArrayList<Integer> myLX = new ArrayList<Integer>();
         ArrayList<Integer> myLY = new ArrayList<Integer>();
 
@@ -610,6 +645,104 @@ public class Main extends Game {
             }
         }
     }
+    
+    /*public void resetPortalEntradaCoords(){
+        
+        if(portal_entrada == null || portal_salida == null) {
+            return;
+        }
+            
+        prevCurrTime_Portal_Entrada = currTime;
+        
+        ArrayList<Integer> myLX = new ArrayList<Integer>();
+        ArrayList<Integer> myLY = new ArrayList<Integer>();
+
+        for (int i = 0; i < mapHeight / SQ_SIZE; i++) {
+            myLY.add(i);
+        }
+
+        for (int j = 0; j < mapWidth / SQ_SIZE; j++) {
+            myLX.add(j);
+        }
+
+        Collections.shuffle(myLX);
+        Collections.shuffle(myLY);
+
+        long seed = System.nanoTime();
+        Random randomGenerator = new Random();
+        int randomInt = randomGenerator.nextInt(Math.min(mapHeight / SQ_SIZE - 1, mapWidth / SQ_SIZE - 1));
+
+        for (int i : myLY) {
+            for (int j : myLX) {
+
+                if (controlMatrix[i][j] >= 1) {
+
+                    if (randomInt == 0) {
+                        
+                        portal_entradaX = j;
+                        portal_entradaY = i;
+                        
+                        portal_entrada.setX(SQ_SIZE*portal_entradaX);
+                        portal_entrada.setY(SQ_SIZE*portal_entradaY);
+                        System.out.println("portal changed!!!");
+
+                        return;
+                    }
+
+                    randomInt--;
+                }
+            }
+        }
+    }*/
+    
+    /*public void resetPortalSalidaCoords(){
+        
+        if(portal_entrada == null || portal_salida == null || prevCurrTime_Portal_Salida == currTime) {
+            return;
+        }
+        
+        prevCurrTime_Portal_Entrada = currTime;
+
+        ArrayList<Integer> myLX = new ArrayList<Integer>();
+        ArrayList<Integer> myLY = new ArrayList<Integer>();
+
+        for (int i = 0; i < mapHeight / SQ_SIZE; i++) {
+            myLY.add(i);
+        }
+
+        for (int j = 0; j < mapWidth / SQ_SIZE; j++) {
+            myLX.add(j);
+        }
+
+        Collections.shuffle(myLX);
+        Collections.shuffle(myLY);
+
+        long seed = System.nanoTime();
+        Random randomGenerator = new Random();
+        int randomInt = randomGenerator.nextInt(Math.min(mapHeight / SQ_SIZE - 1, mapWidth / SQ_SIZE - 1));
+
+        for (int i : myLY) {
+            for (int j : myLX) {
+
+                if (controlMatrix[i][j] >= 1 && (i != portal_entradaY || j != portal_entradaX)) {
+
+                    if (randomInt == 0) {
+               
+                        portal_salidaX = j;
+                        portal_salidaY = i;
+                        
+                        portal_salida.setX(SQ_SIZE*portal_salidaX);
+                        portal_salida.setY(SQ_SIZE*portal_salidaY);
+                        //System.out.println("bucketX = " + bucketX + "; bucketY = " + bucketY);
+
+                        return;
+                    }
+
+                    randomInt--;
+                }
+            }
+        }
+    }*/
 
     public void setCoinMatrix() {
 
@@ -1091,7 +1224,7 @@ public class Main extends Game {
             currLevel = 6;
         }
 
-        System.out.println("currLevel = " + currLevel);
+        //System.out.println("currLevel = " + currLevel);
 
         switch (currLevel) {
 
@@ -1122,10 +1255,10 @@ public class Main extends Game {
 
             case 2:
                 if(lives == 1 || lives == 2){
-                    System.out.println("OPEN " + open.size());
+                    /*System.out.println("OPEN " + open.size());
                     System.out.println("CLOSED " + closed.size());
                     System.out.println("SOLUTION " + solutionNodes.size());
-                    System.out.println("CELL " + controlMatrix[pmY][pmX - 1]);
+                    System.out.println("CELL " + controlMatrix[pmY][pmX - 1]);*/
                 }
 
                 levelStarted[2] = true; //Level 1
@@ -1527,7 +1660,7 @@ public class Main extends Game {
             sprite3.move(mX3, mY3);
         }
         
-        System.out.println("Prev Blocked   "+isBlocked);
+        //System.out.println("Prev Blocked   "+isBlocked);
         
         if(enemyIsBlocked() && isBlocked == false){
             
@@ -1569,11 +1702,14 @@ public class Main extends Game {
         grupoAgente.update(elapsedTime);
         grupoPuerta.update(elapsedTime);
         grupoBucket.update(elapsedTime);
-
+        
+        //portal_salida.update(elapsedTime);
+        //portal_entrada.update(elapsedTime);
+                
         grupoBala.update(elapsedTime);
         checkBullets();
         updateCoins(elapsedTime);
-        
+       
         //colisionadorBM.checkCollision(); //Create map through object
         if (pickedCoins1 == TOT_COINS) { //If the player has already picked all the diamonds
             
@@ -1601,6 +1737,14 @@ public class Main extends Game {
             caughtBucket = true;
         }
         
+        /*if(bobXCell == portal_entradaX && bobYCell == portal_entradaY){
+            
+            bobXCell = portal_salidaX;
+            bobYCell = portal_salidaY;
+            
+            resetCharacter(bobXCell*SQ_SIZE, bobYCell*SQ_SIZE);
+        }*/
+        
         //System.out.println("currRocks = " + currRocks);
         
         updateRocks(elapsedTime);
@@ -1608,7 +1752,6 @@ public class Main extends Game {
         if (keyPressed(KeyEvent.VK_K)){
             System.out.println("KKKKKKK en"+bobYCell+"   &   "+bobXCell+ "           "+controlMatrix[bobYCell][bobXCell-1]);
         }
-        
 
         if (keyPressed(KeyEvent.VK_SPACE)) {
             
@@ -1647,12 +1790,14 @@ public class Main extends Game {
             
             resetBucketCoords();
             resetDoorCoords();
+            //resetPortalEntradaCoords();
+            //resetPortalSalidaCoords();
         }
     }
     
     public boolean rockCanBePlaced(){
         
-        System.out.println("bobXCell = "+bobXCell+"   bobYCell = "+bobYCell+ "   Direction = "+prevBobDirection);
+        System.out.println("bobXCell = " + bobXCell + "   bobYCell = "+bobYCell+ "   Direction = "+prevBobDirection);
         
         switch(prevBobDirection){ //It had prevBobDirection as parameter of the switch!
             
@@ -1949,10 +2094,10 @@ public class Main extends Game {
         agente.move(bobMoveX, bobMoveY);
     }
 
-    public void resetCharacter(){
+    public void resetCharacter(int xCoord, int yCoord){
 
-        bobX = CHARACTER_START_X;
-        bobY = CHARACTER_START_Y;
+        bobX = xCoord;
+        bobY = yCoord;
         agente = new Agente("0");
         agente.setImages(bsLoader.getStoredImages("0_2"));
         agente.setX(bobX);
@@ -2667,7 +2812,7 @@ public class Main extends Game {
     
     public boolean enemyWon(){
         
-        System.out.println("pickedCoins2 = " + pickedCoins2 + "; pmX = " + pmX + "; pmY = " + pmY);
+        //System.out.println("pickedCoins2 = " + pickedCoins2 + "; pmX = " + pmX + "; pmY = " + pmY);
         return pickedCoins2 == TOT_COINS && doorX == pmX && doorY == pmY;
     }
 
@@ -2970,6 +3115,9 @@ public class Main extends Game {
         grupoPuerta.render(g);
         grupoAgente.render(g);
         grupoBucket.render(g);
+        
+        /*portal_salida.render(g);
+        portal_entrada.render(g);*/
         sprite3.render(g);
         
         renderRocks(g);
