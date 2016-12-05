@@ -1681,7 +1681,7 @@ public class Main extends Game {
             //System.out.println("currTime = " + currTime);
             //System.out.println("r.getInitialTime() = " + r.getInitialTime());
             
-            if(Math.abs(currTime - r.getInitialTime()) >= ROCK_TIME){
+            if(Math.abs(currTime - r.getInitialTime()) >= r.getTotalTime() /*ROCK_TIME*/){
                
                //System.out.println("r.getXCell()/SQ_SIZE = " + r.getXCell()/SQ_SIZE + "; r.getYCell()/SQ_SIZE = " + r.getYCell()/SQ_SIZE);
                deleteRockCoords(r.getXCell()/SQ_SIZE, r.getYCell()/SQ_SIZE);
