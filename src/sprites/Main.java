@@ -1116,10 +1116,11 @@ public class Main extends Game {
                 break;
 
             case 2:
-                if(lives == 1){
+                if(lives == 1 || lives == 2){
                     System.out.println("OPEN " + open.size());
                     System.out.println("CLOSED " + closed.size());
                     System.out.println("SOLUTION " + solutionNodes.size());
+                    System.out.println("CELL " + controlMatrix[pmY][pmX - 1]);
                 }
 
                 levelStarted[2] = true; //Level 1
@@ -2134,11 +2135,19 @@ public class Main extends Game {
                 getPath();
                 return;
             }
-
+            if(lives == 1 || lives == 2)
+                    System.out.println("SOLUTION ");
             ArrayList<Nodo> xChildren = x.computeChildren(x.getPositionX(), x.getPositionY()); //We generate the children
             changeParent(xChildren, closed.size()-1);
             //System.out.println("xChildren.size() = " + xChildren.size());
+            
+            if(lives == 1 || lives == 2){
+                    System.out.println("CREANDO HIJOS  "+ xChildren.size());
+                    System.out.println("ARE ALL FALSE  "+ x.areAllFalse());
+            }
+            
             addChildrenToOpen(xChildren); //We add them to open
+            
         }
     }
     
@@ -2854,9 +2863,9 @@ public class Main extends Game {
                 renderGameWithObjects(g);
                 g.setFont(new Font("SansSerif", Font.BOLD, 20));
                 g.setColor(Color.WHITE);
-                g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 170);
-                g.drawString("Lives:    " + lives, 18*SQ_SIZE, 220);
-                g.drawString("Remaining diamonds:    " + (TOT_COINS - pickedCoins1), 18*SQ_SIZE, 270);
+                g.drawString("Rocks:    " + currRocks, 23*SQ_SIZE, 170);
+                g.drawString("Lives:    " + lives, 23*SQ_SIZE, 220);
+                g.drawString("Remaining diamonds:    " + (TOT_COINS - pickedCoins1), 23*SQ_SIZE, 270);
                 
                 if(currTime%2 == 0 && pickedCoins2 == TOT_COINS)
                     g.drawString("Hurry up!", 7*SQ_SIZE, 11*SQ_SIZE);

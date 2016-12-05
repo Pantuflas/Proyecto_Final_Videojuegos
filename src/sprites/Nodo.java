@@ -233,8 +233,8 @@ public class Nodo implements Comparable<Nodo>{
     }
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){
-        //System.out.println("Compute Children!!!!");
-        //System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
+        System.out.println("Compute Children!!!!");
+        System.out.println("Up " + up + "      down" + down + "      left" + left + "      right" + right);
         ArrayList<Nodo> myChildren = new ArrayList<Nodo>();
         
         if(right == true){
@@ -319,6 +319,7 @@ public class Nodo implements Comparable<Nodo>{
     public boolean areAllFalse(){
         return allFalse;
     }
+    
     
     public int compareTo(Nodo other){
         
