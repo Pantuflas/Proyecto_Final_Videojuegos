@@ -33,6 +33,9 @@ public class Rock {
     private int xCell;
     private int yCell;
     private Sprite rockSprite;
+    private final int MIN_TIME = 4;
+    private final int MAX_TIME = 8;
+    private int totalTime = -1;
     
     public Rock(long initialTime, int xCell, int yCell, Sprite rockSprite){
         
@@ -40,6 +43,17 @@ public class Rock {
         setXCell(xCell);
         setYCell(yCell);
         setRockSprite(rockSprite);
+        setTotalTime();
+    }
+    
+    public void setTotalTime(){
+        
+        totalTime = MIN_TIME + (int)(Math.random() * ((MAX_TIME - MIN_TIME) + 1));
+    }
+    
+    public int getTotalTime(){
+        
+        return totalTime;
     }
     
     public void update(long elapsedTime){
