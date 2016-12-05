@@ -107,6 +107,7 @@ public class Main extends Game {
     private int[][] cornersCells;
     private final int PIXEL_ERR = SQ_SIZE / 8;
     private final int INNER_POINT_DIFF = SQ_SIZE / 4;
+    private final int MIN_ACCEPTABLE_DISTANCE_BETWEEN_DIAMONDS = 2;
 
     private final int AM_SPIDERS = 1;
 
@@ -432,8 +433,8 @@ public class Main extends Game {
         totCoinsCells2 = new int[TOT_COINS][2];
         coinMatrix1 = new int[mapHeight / SQ_SIZE][mapWidth / SQ_SIZE - EXTRA_CELLS];
         coinMatrix2 = new int[mapHeight / SQ_SIZE][mapWidth / SQ_SIZE - EXTRA_CELLS];
-        setTotCoinsPositions();
-
+        //setTotCoinsPositions();
+        randomSetTotCoinsPositions();
         //if(currLevel >= 3)
         displayControlMatrix();
 
@@ -642,6 +643,82 @@ public class Main extends Game {
     public boolean areGoodCoinCells(int y, int x) {
 
         return (y >= 1 && y < mapHeight / SQ_SIZE) && (x >= 1 && x < mapWidth / SQ_SIZE - EXTRA_CELLS) && (controlMatrix[y][x] >= 1) && (y != CHARACTER_START_Y / SQ_SIZE || x != CHARACTER_START_Y / SQ_SIZE);
+    
+    }
+    
+    public boolean auxAreTooCloseCoords(int x1, int y1, int x2, int y2){
+        
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2) <= MIN_ACCEPTABLE_DISTANCE_BETWEEN_DIAMONDS;
+    }
+    
+    public boolean areTooCloseCoords(int x, int y, int i){
+        
+        for(int j = 0; j < i; j++){
+            
+            if(j < TOT_COINS){
+                
+                if(auxAreTooCloseCoords(totCoinsCells1[j%TOT_COINS][0], totCoinsCells1[j%TOT_COINS][1], x, y))
+                    return true;
+            }
+            
+            else{
+                
+                if(auxAreTooCloseCoords(totCoinsCells2[j%TOT_COINS][0], totCoinsCells2[j%TOT_COINS][1], x, y))
+                    return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public void randomSetTotCoinsPositions(){
+        
+        int minX = 1;
+        int maxX = mapWidth / SQ_SIZE - 1;
+        int minY = 1;
+        int maxY = mapHeight / SQ_SIZE - 1;
+        int randomIntX = -1;
+        int randomIntY = -1;
+        
+        for(int i = 0; i < 2*TOT_COINS; i++){
+            
+            while(true){
+                
+                randomIntX = minX + (int)(Math.random() * ((maxX - minX) + 1));
+                randomIntY = minY + (int)(Math.random() * ((maxY - minY) + 1));
+                
+                boolean areRepeatedOrTooCloseCoords = false;
+                
+                for(int j = 0; j < i; j++){ //Check if there aren't repeated coords
+                    
+                    if(areTooCloseCoords(randomIntX, randomIntY, i) || totCoinsCells1[j%TOT_COINS][0] == randomIntX && totCoinsCells1[j%TOT_COINS][1] == randomIntY || totCoinsCells2[j%TOT_COINS][0] == randomIntX && totCoinsCells2[j%TOT_COINS][1] == randomIntY){
+                        
+                        areRepeatedOrTooCloseCoords = true;
+                        break;
+                    }
+                }
+                
+                if(areRepeatedOrTooCloseCoords || (controlMatrix[randomIntY][randomIntX] != OPEN_CELL && controlMatrix[randomIntY][randomIntX] != INTERSECTION)) //If there are repeated coords, generate randoms again
+                    continue;
+                
+                else{
+                    
+                    if(i < TOT_COINS){
+                        
+                        totCoinsCells1[i][0] = randomIntX;
+                        totCoinsCells1[i][1] = randomIntY;
+                    }
+                    
+                    else{
+                        
+                        totCoinsCells2[i%TOT_COINS][0] = randomIntX;
+                        totCoinsCells2[i%TOT_COINS][1] = randomIntY;
+                    }
+                    
+                    break; //break the while(true) loop
+                }
+            }
+        }
     }
 
     public void setTotCoinsPositions() {
