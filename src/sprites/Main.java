@@ -153,8 +153,8 @@ public class Main extends Game {
     private final String rockName = "rock";
     private int currMap = (currLevel < 3) ? 0 : 1;
 
-    private static int CLIP_WIDTH = 17*SQ_SIZE + 6*SQ_SIZE; //first level map + sidebar
-    private static int CLIP_HEIGHT = 17*SQ_SIZE;
+    private static int CLIP_WIDTH = 960; //first level map + sidebar
+    private static int CLIP_HEIGHT = 480;
     
     /*For level 2:
     
@@ -165,15 +165,15 @@ public class Main extends Game {
     private final int characterStrip = 8;
     private final int enemyStrip = 5;
 
-    private final int CHARACTER_START_X = SQ_SIZE;
-    private final int CHARACTER_START_Y = SQ_SIZE;
+    private int CHARACTER_START_X = SQ_SIZE;
+    private int CHARACTER_START_Y = SQ_SIZE;
     /*32*//*SQ_SIZE + SQ_SIZE/2*/
 
     private final int ENEMY_STARTPOS_X1 = 15 * SQ_SIZE; //Level one
     private final int ENEMY_STARTPOS_Y1 = 1 * SQ_SIZE;
     
     private final int ENEMY_STARTPOS_X2 = 12 * SQ_SIZE; //Level two
-    private final int ENEMY_STARTPOS_Y2 = 9 * SQ_SIZE;
+    private final int ENEMY_STARTPOS_Y2 = 5 * SQ_SIZE;
     
     private final int INITIAL_DOOR_X_CELL = 8;
     private final int INITIAL_DOOR_Y_CELL = 12;
@@ -299,18 +299,18 @@ public class Main extends Game {
 
     public void resetLevel() {
         
+        caughtBucket = false;
+        
         if(currLevel <= 3){
             
-            sideBar = new Sprite(getImage("images/sidebar2.png"), 17*SQ_SIZE, 0); 
+            sideBar = new Sprite(getImage("images/sidebar_good1.png"), 17*SQ_SIZE, 0); 
             TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_ONE;
         }
         
         else{
             
             TREE_HEIGHT_LIMIT = HEIGHT_LEVEL_TWO;
-            sideBar = new Sprite(getImage("images/sidebar2.png"), 23*SQ_SIZE, 0);
-            CLIP_WIDTH = 23*SQ_SIZE + 6*SQ_SIZE; //second level map + sidebar
-            CLIP_HEIGHT = 15*SQ_SIZE;
+            sideBar = new Sprite(getImage("images/sidebar_good2.png"), 23*SQ_SIZE, 0);
         }
         
         path = new ArrayList<Integer>();
@@ -367,6 +367,18 @@ public class Main extends Game {
         totBobX = new int[4];
         totBobY = new int[4];
 
+        if(currLevel <= 3){
+            
+            CHARACTER_START_X = 1*SQ_SIZE;
+            CHARACTER_START_Y = 1*SQ_SIZE;
+        }
+        
+        else{
+            
+            CHARACTER_START_X = 10*SQ_SIZE;
+            CHARACTER_START_Y = 5*SQ_SIZE;
+        }
+        
         bobX = CHARACTER_START_X;
         bobY = CHARACTER_START_Y;
         //CargarImagenes();
@@ -1996,7 +2008,7 @@ public class Main extends Game {
         
         if(Math.abs(currentTime - prevBlockedEnemyTime) >= BLOCKED_ENEMY_TIME_CONSTANT){
             
-            blocked = prevPmX == pmX && prevPmY == pmY && solutionNodes.size() == 0;
+            blocked = prevPmX == pmX && prevPmY == pmY && closed.size() == 0 && open.size() == 0; //estaba solo con solutionNodes.size() al final
            
             prevPmX = pmX;
             prevPmY = pmY;
@@ -2722,9 +2734,12 @@ public class Main extends Game {
                 break;
 
             case 2:
-                
+                 
                 renderGameWithObjects(g);
-                g.drawString("" + currRocks, 20*SQ_SIZE, 200);
+                g.setFont(new Font("SansSerif", Font.BOLD, 20));
+                g.setColor(Color.WHITE);
+                g.drawString("Rocks:    " + currRocks, 18*SQ_SIZE, 200);
+                g.drawString("Lives:    " + lives, 18*SQ_SIZE, 250);
                 break;
 
             case 3:
@@ -2735,7 +2750,10 @@ public class Main extends Game {
             case 4:
                 
                 renderGameWithObjects(g);
-                //g.drawString("" + currRocks, 26*SQ_SIZE, 250);
+                g.setFont(new Font("SansSerif", Font.BOLD, 20));
+                g.setColor(Color.WHITE);
+                g.drawString("Rocks:    " + currRocks, 25*SQ_SIZE, 200);
+                g.drawString("Lives:    " + lives, 25*SQ_SIZE, 250);
                 break;
 
             case 5:
@@ -2752,7 +2770,7 @@ public class Main extends Game {
 
     public void renderGameWithObjects(Graphics2D g) {
 
-        g.setColor(Color.BLUE);
+        g.setColor(Color.RED);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         //g.drawImage(map, 0, 0, null);
