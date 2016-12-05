@@ -1419,6 +1419,13 @@ public class Main extends Game {
         //System.out.println("bobX/SQ_SIZE = " + bobX/SQ_SIZE + "; bobY/SQ_SIZE = " + bobY/SQ_SIZE);
         //System.out.println("controlMatrix[" + bobY/SQ_SIZE + "][" + bobX/SQ_SIZE + "] = " + controlMatrix[bobY/SQ_SIZE][bobX/SQ_SIZE]);        
         //System.out.println();
+        
+        if(enemyWon()){
+                    
+            lives--;
+            resetLevel();
+        }
+        
         if (velocidad.action(elapsedTime)) {
 
             //moveCharacter(elapsedTime);
@@ -1427,6 +1434,8 @@ public class Main extends Game {
 
             sprite3.move(mX3, mY3);
         }
+        
+        System.out.println("Prev Blocjed   "+isBlocked);
         
         if(enemyIsBlocked() && isBlocked == false){
             
@@ -2555,6 +2564,7 @@ public class Main extends Game {
     
     public boolean enemyWon(){
         
+        System.out.println("pickedCoins2 = " + pickedCoins2 + "; pmX = " + pmX + "; pmY = " + pmY);
         return pickedCoins2 == TOT_COINS && doorX == pmX && doorY == pmY;
     }
 
@@ -2619,19 +2629,10 @@ public class Main extends Game {
                 stopEnemy();
                 deleteIntelligence();
                 
-                if(enemyWon()){
-                    
-                    lives--;
-                    resetLevel();
-                }
-                
-                else{
-                    
-                    getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
-                    finish = false;
-                    rockPlaced = false;
-                    rockDeleted = false;
-                }
+                getMovementsR2(new Nodo(controlMatrix, pmX, pmY, 0, 0, 0, currLevel, map, false, pickedCoins2));
+                finish = false;
+                rockPlaced = false;
+                rockDeleted = false;
             }
             
             if(winningIndex == solutionNodes.size() - 1){
