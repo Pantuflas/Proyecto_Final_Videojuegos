@@ -212,6 +212,7 @@ public class Main extends Game {
     private boolean finish = false;
     private boolean rockPlaced = false;
     private boolean rockDeleted = false;
+    private boolean isBlocked = false;
     
     private int enemyCoordX = ENEMY_STARTPOS_X1;
     private int enemyCoordY = ENEMY_STARTPOS_Y1;
@@ -300,6 +301,7 @@ public class Main extends Game {
     public void resetLevel() {
         
         caughtBucket = false;
+        isBlocked = false;
         
         if(currLevel <= 3){
             
@@ -1426,13 +1428,20 @@ public class Main extends Game {
             sprite3.move(mX3, mY3);
         }
         
-        if(enemyIsBlocked()){
+        if(enemyIsBlocked() && isBlocked == false){
             
             System.out.println("ENEMY IS BLOCKED!!!!!");
             stopEnemy();
             deleteIntelligence();
+            //Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+            isBlocked = true;
+            //getMovementsR2(startingNode);  
+        }
+        if(!enemyIsBlocked() && isBlocked == true){
             Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
-            getMovementsR2(startingNode);  
+            getMovementsR2(startingNode); 
+            isBlocked = false;
+            
         }
 
         /*if (prevPickedCoins2 < pickedCoins2) { //If the enemy just caught another diamond
