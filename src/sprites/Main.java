@@ -2861,7 +2861,7 @@ public class Main extends Game {
             case 4:
                 
                 renderGameWithObjects(g);
-                g.setFont(new Font("SansSerif", Font.BOLD, 20));
+                g.setFont(new Font("SansSerif", Font.BOLD, 16));
                 g.setColor(Color.WHITE);
                 g.drawString("Rocks:    " + currRocks, 23*SQ_SIZE, 170);
                 g.drawString("Lives:    " + lives, 23*SQ_SIZE, 220);
