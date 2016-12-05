@@ -229,7 +229,7 @@ public class Nodo implements Comparable<Nodo>{
     
     public boolean coordsAreValid(int x, int y){
         
-        return (x >= 1) && (x < mapWidth - 1) && (y >= 1) && (y < mapHeight - 1);
+        return (x >= 1) && (x < mapWidth /*- 1*/) && (y >= 1) && (y < mapHeight /*- 1*/);
     }
     
     public ArrayList<Nodo> computeChildren(int posX, int posY){

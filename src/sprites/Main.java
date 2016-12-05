@@ -301,6 +301,7 @@ public class Main extends Game {
 
     public void resetLevel() {
         
+        stopEnemy();
         caughtBucket = false;
         isBlocked = false;
         prevBlockedEnemyTime = 0;
@@ -493,8 +494,8 @@ public class Main extends Game {
         
         stopEnemy();
         deleteIntelligence();
-        
-        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+        direc3 = 0;
+        Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map, false, pickedCoins2);
         getMovementsR2(startingNode);
     }
 
@@ -704,6 +705,9 @@ public class Main extends Game {
                 }
                 
                 if(areRepeatedOrTooCloseCoords || (controlMatrix[randomIntY][randomIntX] != OPEN_CELL && controlMatrix[randomIntY][randomIntX] != INTERSECTION)) //If there are repeated coords, generate randoms again
+                    continue;
+                
+                else if(randomIntX == 15)
                     continue;
                 
                 else{
@@ -1519,8 +1523,6 @@ public class Main extends Game {
 
             //moveCharacter(elapsedTime);
             moveCharacterMemo(elapsedTime);
-            
-
             sprite3.move(mX3, mY3);
         }
         
@@ -1536,7 +1538,7 @@ public class Main extends Game {
             //getMovementsR2(startingNode);  
         }
         if(!enemyIsBlocked() && isBlocked == true){
-            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map, false, pickedCoins2);
             getMovementsR2(startingNode); 
             isBlocked = false;
             
@@ -1706,7 +1708,7 @@ public class Main extends Game {
             System.out.println("At least one rock delete!!");
             stopEnemy();
             deleteIntelligence();
-            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 4, currLevel, map, false, pickedCoins2);
+            Nodo startingNode = new Nodo(controlMatrix, pmX, pmY, direc3, 0, 0, currLevel, map, false, pickedCoins2);
             getMovementsR2(startingNode);
             displayControlMatrix();
         }
@@ -2088,9 +2090,10 @@ public class Main extends Game {
 
             if (!nodeIsInClosed(n)) { //Only add the node to open if it is not in "closed"
 
-                //System.out.println("HEEEEERE!!!!!!!!!!!!!!!!!!");
+                System.out.println("Adding child");
                 open.add(n);
-            }
+            }else
+                System.out.println("Not adding child");
         }
     }
     
@@ -2863,7 +2866,7 @@ public class Main extends Game {
             case 4:
                 
                 renderGameWithObjects(g);
-                g.setFont(new Font("SansSerif", Font.BOLD, 20));
+                g.setFont(new Font("SansSerif", Font.BOLD, 16));
                 g.setColor(Color.WHITE);
                 g.drawString("Rocks:    " + currRocks, 23*SQ_SIZE, 170);
                 g.drawString("Lives:    " + lives, 23*SQ_SIZE, 220);
