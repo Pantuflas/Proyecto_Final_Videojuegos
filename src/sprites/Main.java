@@ -1584,7 +1584,9 @@ public class Main extends Game {
             deleteIntelligence();
             currLevel++;
             currMap++;
-            map = getImage(mapNames[currMap] + ".png");
+           
+            if(currLevel < 5) 
+                map = getImage(mapNames[currMap] + ".png");
         }
 
         colisionadorAB.checkCollision();
