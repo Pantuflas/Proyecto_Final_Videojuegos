@@ -20,6 +20,7 @@ public class Nodo implements Comparable<Nodo>{
     boolean up = false;
     boolean down = false;
     boolean pathFound = false;
+    boolean allFalse = false;
     private int currentDirection;
     private long value;
     int lastDirection = 0; //2 right, 4 left, 1 up, 3 down
@@ -204,6 +205,8 @@ public class Nodo implements Comparable<Nodo>{
                 else
                     left = false;
         }catch(ArrayIndexOutOfBoundsException aiobe){}
+        if(up && down && left && right == false)
+            allFalse = true;
     }
     
     public boolean isDoorOrDiamond(int posX, int posY){
@@ -323,6 +326,9 @@ public class Nodo implements Comparable<Nodo>{
     }
     public boolean foundPath(){
         return pathFound;
+    }
+    public boolean areAllFalse(){
+        return allFalse;
     }
     
     public int compareTo(Nodo other){
