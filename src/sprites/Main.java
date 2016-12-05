@@ -301,6 +301,7 @@ public class Main extends Game {
 
     public void resetLevel() {
         
+        prevCurrTime = -1;
         stopEnemy();
         caughtBucket = false;
         isBlocked = false;
@@ -1526,7 +1527,7 @@ public class Main extends Game {
             sprite3.move(mX3, mY3);
         }
         
-        System.out.println("Prev Blocjed   "+isBlocked);
+        System.out.println("Prev Blocked   "+isBlocked);
         
         if(enemyIsBlocked() && isBlocked == false){
             
