@@ -243,17 +243,13 @@ public class Nodo implements Comparable<Nodo>{
             
             int posX1 = posX;
             
-            
-                
                 posX1++;
                 nextCell = matrix[posY][posX1];
-            
             
             if(isDoorOrDiamond(posX1, posY))
                 myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map, true, pickedDiamonds));
             else
                 myChildren.add(new Nodo(matrix, posX1, posY, 4, (g + 1), 2, level, map, false, pickedDiamonds));
-            
         }
         
         if(left == true){
@@ -261,8 +257,7 @@ public class Nodo implements Comparable<Nodo>{
             int nextCell = OPEN_CELL;
             
             int posX2 = posX;
-            
-                
+             
                 posX2--;
                 nextCell = matrix[posY][posX2];
             
@@ -279,8 +274,7 @@ public class Nodo implements Comparable<Nodo>{
             int nextCell = OPEN_CELL;
             
             int posY1 = posY;
-            
-
+           
                 posY1--;
                 nextCell = matrix[posY1][posX];
             
@@ -288,8 +282,6 @@ public class Nodo implements Comparable<Nodo>{
                 myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map, true, pickedDiamonds));
             else
                 myChildren.add(new Nodo(matrix, posX, posY1, 3, (g + 1), 1, level, map, false, pickedDiamonds));
-            
-            
         }
         
         if(down == true){
@@ -298,7 +290,6 @@ public class Nodo implements Comparable<Nodo>{
             
             int posY2 = posY;
 
-                
                 posY2++;
                 nextCell = matrix[posY2][posX];
             
@@ -306,8 +297,6 @@ public class Nodo implements Comparable<Nodo>{
                 myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map, true, pickedDiamonds));
             else
                 myChildren.add(new Nodo(matrix, posX, posY2, 1, (g + 1), 3, level, map, false, pickedDiamonds));
-            
-            
         }
         
         return myChildren;

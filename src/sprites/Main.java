@@ -133,7 +133,7 @@ public class Main extends Game {
     private int pickedCoins1 = 0;
     private int pickedCoins2 = 0; //Diamonds picked by the enemy
     private int prevPickedCoins2 = -1; //previous amount of diamonds picked by the enemy
-    private int currLevel = 0;
+    private int currLevel = 2;
     private long startTime;
     private long currTime;
     private long prevCurrTime = -1;
@@ -237,7 +237,7 @@ public class Main extends Game {
     private long prevBlockedEnemyTime = 0;
     private int prevPmX;
     private int prevPmY;
-    private final long BLOCKED_ENEMY_TIME_CONSTANT = 2000000000; //Estaba en 1 segundo
+    private final long BLOCKED_ENEMY_TIME_CONSTANT = 1000000000; //Estaba en 1 segundo
 
     /*
         c = center
@@ -1024,9 +1024,9 @@ public class Main extends Game {
             case 1:
 
                 /*levelStarted[1] = true;
-            level1Screen.update(elapsedTime);
+                level1Screen.update(elapsedTime);
 
-            if(keyDown(KeyEvent.VK_SPACE))*/
+                if(keyDown(KeyEvent.VK_SPACE))*/
                 currLevel++;
 
                 break;
@@ -1035,7 +1035,7 @@ public class Main extends Game {
 
                 levelStarted[2] = true; //Level 1
                 
-                if (pickedCoins1 == TOT_COINS + 1) {
+                if(pickedCoins1 == TOT_COINS + 1) {
                     
                     currLevel++;
                 }
@@ -1990,9 +1990,9 @@ public class Main extends Game {
         long currentTime = System.nanoTime();
         boolean blocked = false;
         
-        if(Math.abs(currentTime - prevBlockedEnemyTime) >= BLOCKED_ENEMY_TIME_CONSTANT){
+        if(Math.abs(currentTime - prevBlockedEnemyTime) >= 3*BLOCKED_ENEMY_TIME_CONSTANT){
             
-            blocked = prevPmX == pmX && prevPmY == pmY && closed.size() == 0 && open.size() == 0; //estaba solo con solutionNodes.size() al final
+            blocked = (prevPmX == pmX && prevPmY == pmY) && solutionNodes.size() == 0; /*&& closed.size() == 0 && open.size() == 0*/; //estaba solo con solutionNodes.size() al final
            
             prevPmX = pmX;
             prevPmY = pmY;
@@ -2546,7 +2546,7 @@ public class Main extends Game {
     
     public boolean enemyWon(){
         
-        return doorX == pmX && doorY == pmY;
+        return pickedCoins2 == TOT_COINS && doorX == pmX && doorY == pmY;
     }
 
     public void moveR2(/*long elapsedTime*/) {
